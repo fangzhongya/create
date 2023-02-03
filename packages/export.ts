@@ -1,7 +1,12 @@
 import { resolve, join } from 'node:path';
 
-import { fsOpen, mergeObject, writeInit } from './common';
-import type { FsReaddir } from './common';
+import {
+    fsOpen,
+    unmergeObject,
+    writeInit,
+    getSuffixReg,
+} from './common';
+import type { RurDevCallback } from './common';
 
 interface Objunkn {
     [key: string]: any;
@@ -25,6 +30,10 @@ const defaultConfig: Config = {
      */
     dir: './packages/',
     /**
+     * 文件后缀
+     */
+    extensions: ['js', 'ts'],
+    /**
      * 生成的文件名称
      */
     gene: 'index.ts',
@@ -32,57 +41,77 @@ const defaultConfig: Config = {
 
 const initObj: Objunkn = {};
 
-function initConfig() {
-    if (!defaultConfig.dir) {
-        defaultConfig.dir = './packages/';
-    }
-    initObj.dirUrl = resolve(
-        process.cwd(),
-        defaultConfig.dir,
+export function initConfig(config: Config) {
+    initObj.config = unmergeObject(
+        defaultConfig,
+        config,
+        1,
     );
-}
-export function getGene(): string {
-    if (!defaultConfig.gene) {
-        defaultConfig.gene = 'index.ts';
-    }
-    return defaultConfig.gene;
+    initObj.config.suffixReg = getSuffixReg(
+        initObj.config.extensions,
+        defaultConfig.extensions,
+    );
+    return initObj.config;
 }
 
-export function writeCallback(
-    gene: string,
-    url: string,
-    file: FsReaddir,
+function getDirUrl(dir?: string) {
+    return resolve(
+        process.cwd(),
+        dir || initObj.config.dir || defaultConfig.dir,
+    );
+}
+
+function getGene(gene?: string): string {
+    return (
+        gene || initObj.config.gene || defaultConfig.gene
+    );
+}
+
+export const writeCallback: RurDevCallback = function (
+    url,
+    file,
+    urls,
 ) {
-    gene = gene || getGene();
+    const gene = getGene();
     const arr: Array<string> = [];
+    console.log('urls', urls);
+    console.log('file.dirs', file.dirs);
     if (file.dirs) {
         file.dirs.forEach((name) => {
-            arr.push(`export * from './${name}';`);
+            const diru = join(url, name);
+            let is = false;
+            for (const kurl of urls) {
+                if (kurl.startsWith(diru)) {
+                    is = true;
+                    break;
+                }
+            }
+            if (is) {
+                arr.push(`export * from './${name}';`);
+            }
         });
     }
     if (file.file) {
         file.file.forEach((name) => {
             if (name != gene) {
-                const wjmc = name.replace(/\.(ts|js)$/, '');
+                const wjmc = name.replace(
+                    initObj.config.suffixReg,
+                    '',
+                );
                 arr.push(`export * from './${wjmc}';`);
             }
         });
     }
     if (arr.length > 0) {
         fsOpen(join(url, gene), arr.join('\n'));
-    } else {
-        fsOpen(join(url, gene), 'export {}');
     }
-}
+};
 
-async function main(
-    callback?: (url: string, file: FsReaddir) => void,
-) {
-    const gene = getGene();
-    await writeInit(initObj.dirUrl, (url, file) => {
-        writeCallback(gene, url, file);
+async function main(callback?: RurDevCallback) {
+    await writeInit(getDirUrl(), (...arr) => {
+        writeCallback(...arr);
         if (callback) {
-            callback(url, file);
+            callback(...arr);
         }
     });
 }
@@ -90,12 +119,11 @@ async function main(
 export async function runDev(
     config: Config = {},
     configCallback?: (config: Config) => void,
-    callback?: (url: string, file: FsReaddir) => void,
+    callback?: RurDevCallback,
 ) {
-    mergeObject(defaultConfig, config, 1);
-    initConfig();
+    initConfig(config);
     if (configCallback) {
-        configCallback(defaultConfig);
+        configCallback(initObj.config);
     }
     await main(callback);
 }

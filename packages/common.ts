@@ -17,6 +17,69 @@ import { join } from 'node:path';
  * @param i 是否合并数组
  * @returns 合并的对象
  */
+export function unmergeObject<T>(
+    a: T,
+    b: T,
+    j: number = 0,
+    i?: boolean,
+): T {
+    let c;
+    if (a instanceof Array) {
+        if (j > 0 && i) {
+            c = Object.assign([], a);
+            if (b instanceof Array) {
+                for (const v of b) {
+                    if (!a.includes(v)) {
+                        c.push(v);
+                    }
+                }
+            } else {
+                if (!a.includes(b)) {
+                    c.push(b);
+                }
+            }
+        } else {
+            c = b;
+        }
+    } else if (typeof a == 'object') {
+        const cv = Object.prototype.toString.call(a);
+        const ct = Object.prototype.toString.call(b);
+        if (
+            a &&
+            typeof b == 'object' &&
+            cv == ct &&
+            j > 0
+        ) {
+            c = { ...a };
+            const n = j - 1;
+            if (n > 0) {
+                for (const key in b) {
+                    const v = a[key];
+                    const t = b[key];
+                    c[key] = mergeObject(v, t, n, i);
+                }
+            } else {
+                for (const key in b) {
+                    c[key] = b[key];
+                }
+            }
+        } else {
+            c = b;
+        }
+    } else {
+        c = b;
+    }
+    return c;
+}
+
+/**
+ * 合并两个对象的值
+ * @param a 合并到的对象
+ * @param b 合并对象
+ * @param j 合并级别
+ * @param i 是否合并数组
+ * @returns 合并的对象
+ */
 export function mergeObject<T>(
     a: T,
     b: T,
@@ -77,6 +140,12 @@ export interface FsReaddir {
 export interface Objunkn {
     [key: string]: any;
 }
+
+export type RurDevCallback = (
+    url: string,
+    file: FsReaddir,
+    urls: Array<string>,
+) => void;
 
 /**
  * 读取文件内容
@@ -208,38 +277,68 @@ export function fsMkdir(
     });
 }
 
+/**
+ * 当前目录文件地址
+ * @param url 文件目录地址
+ * @param callback 执行回调方法
+ * @returns
+ */
 export function writeInit(
     url: string,
-    callback?: (url: string, file: FsReaddir) => void,
-): Promise<boolean> {
+    callback?: RurDevCallback,
+): Promise<Array<string>> {
     return new Promise(async (resolve) => {
         if (url) {
             const data = await fsReaddir(url);
-            await writeIndex(url, data, callback);
-            resolve(true);
+            await writeFileUrl(url, data, callback);
+            const arr = data.file.map((name) => {
+                return join(url, name);
+            });
+            resolve(arr);
         } else {
-            resolve(false);
+            resolve([]);
         }
     });
 }
 
-function writeIndex(
+/**
+ * 读取子目录
+ * @param url
+ * @param file
+ * @param callback
+ * @returns
+ */
+function writeFileUrl(
     url: string,
     file: FsReaddir,
-    callback?: (url: string, file: FsReaddir) => void,
-): Promise<boolean> {
+    callback?: RurDevCallback,
+): Promise<Array<string>> {
     return new Promise(async (resolve) => {
-        if (callback) {
-            callback(url, file);
-        }
+        const arr: Array<string> = [];
         if (file.dirs.length > 0) {
             for (let i = 0; i < file.dirs.length; i++) {
-                await writeInit(
+                const urls = await writeInit(
                     join(url, file.dirs[i]),
                     callback,
                 );
+                arr.push(...urls);
             }
         }
-        resolve(true);
+        if (callback) {
+            callback(url, file, arr);
+        }
+        resolve(arr);
     });
+}
+
+export function getSuffixReg(
+    ex: Array<string> = [],
+    mr?: Array<string>,
+) {
+    if (ex.length == 0) {
+        if (mr) {
+            ex.push(...mr);
+        }
+    }
+    return new RegExp(`\\.(${ex.join('|')})$`);
 }

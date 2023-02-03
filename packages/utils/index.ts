@@ -1,9 +1,14 @@
 import { resolve, join } from 'node:path';
-import { runDev as exportRunDev, getGene } from '../export';
-import { fsMkdir, fsOpen } from '../common';
+import { runDev as exportRunDev } from '../export';
+import { fsMkdir, fsOpen, unmergeObject } from '../common';
+import type { RurDevCallback } from '../common';
 import type { Config as ConfigExport } from '../export';
-import type { FsReaddir } from '../common';
-export interface Config extends ConfigExport {}
+export interface Config extends ConfigExport {
+    /**
+     * 合并文件头
+     */
+    merge?: Array<string>;
+}
 
 interface Objunkn {
     [key: string]: any;
@@ -16,60 +21,100 @@ interface IssObj {
 
 const initObj: Objunkn = {};
 
+const defaultConfig: Config = {
+    /**
+     * 合并文件头
+     */
+    merge: ['is'],
+};
+
 export function initConfig(config: Config) {
-    initObj.iss = [] as Array<IssObj>;
-    initObj.config = config;
+    initObj.config = unmergeObject(
+        defaultConfig,
+        config,
+        1,
+    );
+    const merge: Array<string> = initObj.config.merge;
+    if (merge) {
+        merge.forEach((key) => {
+            initObj[key + 's'] = [] as Array<IssObj>;
+        });
+    }
+    return initObj.config;
 }
 
-export function writeCallback(
-    url: string,
-    file: FsReaddir,
+export const writeCallback: RurDevCallback = function (
+    url,
+    file,
 ) {
     if (file.file.length) {
+        const merge: Array<string> = initObj.config.merge;
         file.file.forEach((name) => {
-            const wjmc = name.replace(/\.(ts|js)$/, '');
-            if (/^is[A-Z]([a-z|A-Z])+?$/.test(wjmc)) {
-                initObj.iss.push({
-                    name: wjmc,
-                    url,
-                });
-            }
+            const wjmc = name.replace(
+                initObj.config.suffixReg,
+                '',
+            );
+            merge.forEach((key) => {
+                const reg = new RegExp(
+                    `^(${key})[A-Z]([a-z|A-Z])+?$`,
+                );
+                const rex = reg.exec(wjmc);
+                if (rex && rex.length > 0) {
+                    const sk = rex[1] + 's';
+                    initObj[sk].push({
+                        name: wjmc,
+                        url,
+                    });
+                }
+            });
         });
     }
-}
+};
 
 export async function main() {
-    const gene = getGene();
-    if (initObj.iss.length > 0) {
-        const dirUrl = resolve(
-            process.cwd(),
-            initObj.config.dir,
-        );
-        const arr: Array<string> = [];
-        initObj.iss.forEach((data: IssObj) => {
-            const ust = data.url
-                .replace(dirUrl, '')
-                .replace(/\\/g, '/');
-            arr.push(
-                `export * from '..${
-                    ust + '/' + data.name
-                }';`,
+    const merge: Array<string> = initObj.config.merge;
+    merge.forEach((key) => {
+        let arr = initObj[key + 's'];
+        if (arr.length > 0) {
+            const dirUrl = resolve(
+                process.cwd(),
+                initObj.config.dir,
             );
-        });
-        const issurl = dirUrl + '/iss';
-        fsMkdir(issurl, () => {
-            fsOpen(join(issurl, gene), arr.join('\n'));
-        });
-    }
+            const sts: Array<string> = [];
+            arr.forEach((data: IssObj) => {
+                const ust = data.url
+                    .replace(dirUrl, '')
+                    .replace(/\\/g, '/');
+                sts.push(
+                    `export * from '..${
+                        ust + '/' + data.name
+                    }';`,
+                );
+            });
+            const issurl = join(dirUrl, key + 's');
+            fsMkdir(issurl, () => {
+                fsOpen(
+                    join(issurl, initObj.config.gene),
+                    sts.join('\n'),
+                );
+            });
+        }
+    });
 }
 
-export async function runDev(config: Config = {}) {
+export async function runDev(
+    config: Config = {},
+    configCallback?: (config: Config) => void,
+) {
     await exportRunDev(
         config,
         (c) => {
             initConfig(c);
+            if (configCallback) {
+                configCallback(c);
+            }
         },
         writeCallback,
     );
-    main();
+    await main();
 }

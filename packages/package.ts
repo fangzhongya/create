@@ -3,11 +3,13 @@ import { resolve } from 'node:path';
 import {
     fsOpen,
     fsReadFile,
+    unmergeObject,
     mergeObject,
     writeInit,
+    getSuffixReg,
 } from './common';
 
-import type { FsReaddir } from './common';
+import type { RurDevCallback } from './common';
 
 interface Objunkn {
     [key: string]: any;
@@ -30,6 +32,10 @@ export interface Config {
      * 打包文件目录名称
      */
     dist?: string;
+    /**
+     * 文件后缀
+     */
+    extensions?: Array<string>;
 
     /**
      * package 文件名称
@@ -91,6 +97,11 @@ const defaultConfig: Config = {
     dist: 'dist',
 
     /**
+     * 文件后缀
+     */
+    extensions: ['js', 'ts'],
+
+    /**
      * package 文件名称
      */
     package: './package.json',
@@ -120,39 +131,46 @@ const defaultConfig: Config = {
 
 const initObj: Objunkn = {};
 
-function initConfig() {
-    const files = defaultConfig.files || [];
-    mergeObject(files, [defaultConfig.dist], 1, true);
-    defaultConfig.files = files;
-    const typesVersions = defaultConfig.typesVersions || {};
+/**
+ * 初始化配置
+ */
+export function initConfig(config: Config) {
+    initObj.config = unmergeObject(
+        defaultConfig,
+        config,
+        1,
+    );
+
+    initObj.config.suffixReg = getSuffixReg(
+        initObj.config.extensions,
+        defaultConfig.extensions,
+    );
+    const files = initObj.config.files || [];
+    mergeObject(files, [initObj.config.dist], 1, true);
+    initObj.config.files = files;
+    const typesVersions =
+        initObj.config.typesVersions || {};
     mergeObject(
         typesVersions,
         {
             '*': {
-                '*': [`./${defaultConfig.dist}/*`],
+                '*': [`./${initObj.config.dist}/*`],
             },
         },
         2,
         true,
     );
-    defaultConfig.typesVersions = typesVersions;
-    const tsup = defaultConfig.tsup || {};
+    initObj.config.typesVersions = typesVersions;
+    const tsup = initObj.config.tsup || {};
     if (Object.keys(tsup).length == 0) {
-        if (defaultConfig.type == 'module') {
-            defaultConfig.tsup = tsupObj.module;
+        if (initObj.config.type == 'module') {
+            initObj.config.tsup = tsupObj.module;
         } else {
-            defaultConfig.tsup = tsupObj.default;
+            initObj.config.tsup = tsupObj.default;
         }
     }
-    initObj.packageUrl = resolve(
-        process.cwd(),
-        defaultConfig.package || '',
-    );
 
-    initObj.dirUrl = resolve(
-        process.cwd(),
-        defaultConfig.dir || '',
-    );
+    return initObj.config;
 }
 
 function setExportsObj(
@@ -160,54 +178,63 @@ function setExportsObj(
     name: string = 'index',
 ) {
     const ust = url
-        .replace(initObj.dirUrl, '')
+        .replace(getDirUrl(), '')
         .replace(/\\/g, '/');
     let key: string = '.' + ust;
     if (name != 'index') {
         key += '/' + name;
     }
     const obj: ObjStr = {};
-    if (defaultConfig.tsup?.main) {
+    if (initObj.config.tsup?.main) {
         obj.require = `./${
-            defaultConfig.dist + ust
-        }/${name}.${defaultConfig.tsup.main}`;
+            initObj.config.dist + ust
+        }/${name}.${initObj.config.tsup.main}`;
     }
-    if (defaultConfig.tsup?.module) {
+    if (initObj.config.tsup?.module) {
         obj.import = `./${
-            defaultConfig.dist + ust
-        }/${name}.${defaultConfig.tsup.module}`;
+            initObj.config.dist + ust
+        }/${name}.${initObj.config.tsup.module}`;
     }
-    if (defaultConfig.tsup?.types) {
+    if (initObj.config.tsup?.types) {
         obj.types = `./${
-            defaultConfig.dist + ust
-        }/${name}.${defaultConfig.tsup.types}`;
+            initObj.config.dist + ust
+        }/${name}.${initObj.config.tsup.types}`;
     }
-    if (defaultConfig.exports) {
-        defaultConfig.exports[key] = obj;
+    if (initObj.config.exports) {
+        initObj.config.exports[key] = obj;
     }
 }
 
-async function getPackage() {
-    const st = await fsReadFile(initObj.packageUrl);
-    initObj.packageObj = JSON.parse(st);
+/**
+ * 获取package 配置对象
+ */
+async function getPackage(pac?: string) {
+    const packageUrl = getPackageUrl(pac);
+    if (packageUrl) {
+        const st = await fsReadFile(packageUrl);
+        return JSON.parse(st);
+    }
 }
 
+/**
+ * 设置package 配置
+ */
 function setPackage() {
-    const jb = defaultConfig.cover ? 0 : 10;
-    if (defaultConfig.tsup?.main) {
-        initObj.packageObj.main = `./${defaultConfig.dist}/index.${defaultConfig.tsup.main}`;
+    const jb = initObj.config.cover ? 0 : 10;
+    if (initObj.config.tsup?.main) {
+        initObj.packageObj.main = `./${initObj.config.dist}/index.${initObj.config.tsup.main}`;
     }
-    if (defaultConfig.tsup?.module) {
-        initObj.packageObj.module = `./${defaultConfig.dist}/index.${defaultConfig.tsup.module}`;
+    if (initObj.config.tsup?.module) {
+        initObj.packageObj.module = `./${initObj.config.dist}/index.${initObj.config.tsup.module}`;
     }
-    if (defaultConfig.tsup?.types) {
-        initObj.packageObj.types = `./${defaultConfig.dist}/index.${defaultConfig.tsup.types}`;
+    if (initObj.config.tsup?.types) {
+        initObj.packageObj.types = `./${initObj.config.dist}/index.${initObj.config.tsup.types}`;
     }
 
     let tv = initObj.packageObj.typesVersions || {};
     initObj.packageObj.typesVersions = mergeObject(
         tv,
-        defaultConfig.typesVersions,
+        initObj.config.typesVersions,
         jb,
         true,
     );
@@ -216,7 +243,7 @@ function setPackage() {
 
     initObj.packageObj.files = mergeObject(
         files,
-        defaultConfig.files,
+        initObj.config.files,
         jb,
         true,
     );
@@ -225,43 +252,74 @@ function setPackage() {
 
     initObj.packageObj.exports = mergeObject(
         exports,
-        defaultConfig.exports,
+        initObj.config.exports,
         jb,
         true,
     );
 
     fsOpen(
-        initObj.packageUrl,
+        getPackageUrl(),
         JSON.stringify(initObj.packageObj, null, 4),
     );
 }
 
-async function main(
-    callback?: (url: string, file: FsReaddir) => void,
-) {
-    await getPackage();
+function getPackageUrl(dir?: string) {
+    return resolve(
+        process.cwd(),
+        dir ||
+            initObj.config.package ||
+            defaultConfig.package,
+    );
+}
+
+function getDirUrl(dir?: string) {
+    return resolve(
+        process.cwd(),
+        dir || initObj.config.dir || defaultConfig.dir,
+    );
+}
+
+/**
+ * 处理目录
+ * @param callback
+ */
+async function main(callback?: RurDevCallback) {
+    initObj.packageObj = await getPackage(
+        initObj.config.package,
+    );
     setExportsObj('');
-    await writeInit(initObj.dirUrl, (url, file) => {
+    await writeInit(getDirUrl(), (url, file, urls) => {
+        console.log('urls', urls);
+        console.log('file.file', file.file);
+
         file.file.forEach((name) => {
-            const wjmc = name.replace(/\.ts$/, '');
+            const wjmc = name.replace(
+                initObj.config.suffixReg,
+                '',
+            );
             setExportsObj(url, wjmc);
         });
         if (callback) {
-            callback(url, file);
+            callback(url, file, urls);
         }
     });
     setPackage();
 }
 
+/**
+ * 默认执行方法
+ * @param config 配置参数
+ * @param configCallback 初始化参数后回调
+ * @param callback 获取目录地址回调
+ */
 export async function runDev(
     config: Config = {},
     configCallback?: (config: Config) => void,
-    callback?: (url: string, file: FsReaddir) => void,
+    callback?: RurDevCallback,
 ) {
-    mergeObject(defaultConfig, config, 1);
-    initConfig();
+    initConfig(config);
     if (configCallback) {
-        configCallback(defaultConfig);
+        configCallback(initObj.config);
     }
     await main(callback);
 }
