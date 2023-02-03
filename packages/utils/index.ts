@@ -16,16 +16,15 @@ interface IssObj {
 
 const initObj: Objunkn = {};
 
-function initConfig() {
+export function initConfig(config: Config) {
     initObj.iss = [] as Array<IssObj>;
+    initObj.config = config;
 }
 
 export function writeCallback(
     url: string,
     file: FsReaddir,
 ) {
-    console.log('writeCallback', file);
-
     if (file.file.length) {
         file.file.forEach((name) => {
             const wjmc = name.replace(/\.(ts|js)$/, '');
@@ -41,16 +40,15 @@ export function writeCallback(
 
 export async function main() {
     const gene = getGene();
-
     if (initObj.iss.length > 0) {
-        const issurl = resolve(
+        const dirUrl = resolve(
             process.cwd(),
-            initObj.config.dir + 'iss',
+            initObj.config.dir,
         );
         const arr: Array<string> = [];
         initObj.iss.forEach((data: IssObj) => {
             const ust = data.url
-                .replace(initObj.dirUrl, '')
+                .replace(dirUrl, '')
                 .replace(/\\/g, '/');
             arr.push(
                 `export * from '..${
@@ -58,6 +56,7 @@ export async function main() {
                 }';`,
             );
         });
+        const issurl = dirUrl + '/iss';
         fsMkdir(issurl, () => {
             fsOpen(join(issurl, gene), arr.join('\n'));
         });
@@ -65,11 +64,10 @@ export async function main() {
 }
 
 export async function runDev(config: Config = {}) {
-    initConfig();
     await exportRunDev(
         config,
         (c) => {
-            initObj.config = c;
+            initConfig(c);
         },
         writeCallback,
     );

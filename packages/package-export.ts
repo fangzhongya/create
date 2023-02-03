@@ -10,8 +10,8 @@ export interface Config
 
 const initObj: Objunkn = {};
 
-function initConfig(c: Config) {
-    initObj.config = c;
+export function initConfig(config: Config) {
+    initObj.config = config;
 }
 
 export async function runDev(

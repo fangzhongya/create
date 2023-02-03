@@ -1,5 +1,9 @@
 import { runDev as packageRunDev } from '../package-export';
-import { writeCallback, main } from './index';
+import {
+    writeCallback,
+    main,
+    initConfig as initConfigIndex,
+} from './index';
 import type { Config as ConfigPackage } from '../package-export';
 import type { Config as ConfigIndex } from './index';
 import type { Objunkn, FsReaddir } from '../common';
@@ -9,8 +13,9 @@ export interface Config
 
 const initObj: Objunkn = {};
 
-function initConfig(c: Config) {
-    initObj.config = c;
+export function initConfig(config: Config) {
+    initObj.config = config;
+    initConfigIndex(config);
 }
 
 export async function runDev(

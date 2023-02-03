@@ -1,7 +1,7 @@
 import { runDev } from '../packages/package';
 import { test, expect } from 'vitest';
 
-test('FangComponent', () => {
+test('package runDev', () => {
     runDev({
         cover: true,
         tsup: {
