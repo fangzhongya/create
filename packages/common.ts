@@ -26,9 +26,15 @@ export function mergeObject<T>(
     if (a instanceof Array) {
         if (j > 0 && i) {
             if (b instanceof Array) {
-                a.push(...b);
+                for (const v of b) {
+                    if (!a.includes(v)) {
+                        a.push(v);
+                    }
+                }
             } else {
-                a.push(b);
+                if (!a.includes(b)) {
+                    a.push(b);
+                }
             }
         } else {
             a = b;
@@ -77,7 +83,7 @@ export interface Objunkn {
  */
 export function fsReadFile(url: string): Promise<string> {
     return new Promise((resolve) => {
-        readFile(url, 'utf-8', function (err, dataStr) {
+        readFile(url, 'utf-8', (err, dataStr) => {
             if (err) {
                 console.log(err);
             }
@@ -228,7 +234,10 @@ function writeIndex(
         }
         if (file.dirs.length > 0) {
             for (let i = 0; i < file.dirs.length; i++) {
-                await writeInit(join(url, file.dirs[i]));
+                await writeInit(
+                    join(url, file.dirs[i]),
+                    callback,
+                );
             }
         }
         resolve(true);

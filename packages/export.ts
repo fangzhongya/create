@@ -70,6 +70,8 @@ export function writeCallback(
     }
     if (arr.length > 0) {
         fsOpen(join(url, gene), arr.join('\n'));
+    } else {
+        fsOpen(join(url, gene), 'export {}');
     }
 }
 
@@ -90,7 +92,7 @@ export async function runDev(
     configCallback?: (config: Config) => void,
     callback?: (url: string, file: FsReaddir) => void,
 ) {
-    mergeObject(defaultConfig, config);
+    mergeObject(defaultConfig, config, 1);
     initConfig();
     if (configCallback) {
         configCallback(defaultConfig);

@@ -24,7 +24,9 @@ export function writeCallback(
     url: string,
     file: FsReaddir,
 ) {
-    if (file.file) {
+    console.log('writeCallback', file);
+
+    if (file.file.length) {
         file.file.forEach((name) => {
             const wjmc = name.replace(/\.(ts|js)$/, '');
             if (/^is[A-Z]([a-z|A-Z])+?$/.test(wjmc)) {

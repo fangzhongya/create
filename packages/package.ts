@@ -69,7 +69,7 @@ export interface Config {
 
 const tsupObj = {
     module: {
-        main: 'cjs.js',
+        main: 'cjs',
         module: 'js',
         types: 'd.ts',
     },
@@ -194,7 +194,6 @@ async function getPackage() {
 
 function setPackage() {
     const jb = defaultConfig.cover ? 0 : 10;
-
     if (defaultConfig.tsup?.main) {
         initObj.packageObj.main = `./${defaultConfig.dist}/index.${defaultConfig.tsup.main}`;
     }
@@ -259,9 +258,7 @@ export async function runDev(
     configCallback?: (config: Config) => void,
     callback?: (url: string, file: FsReaddir) => void,
 ) {
-    mergeObject(defaultConfig, config);
-    console.log('defaultConfig', defaultConfig);
-
+    mergeObject(defaultConfig, config, 1);
     initConfig();
     if (configCallback) {
         configCallback(defaultConfig);
