@@ -1,5 +1,8 @@
 import { resolve, join } from 'node:path';
-import { runDev as exportRunDev } from '../export';
+import {
+    runDev as exportRunDev,
+    getDirUrl,
+} from '../export';
 import { fsMkdir, fsOpen, unmergeObject } from '../common';
 import type { RurDevCallback } from '../common';
 import type { Config as ConfigExport } from '../export';
@@ -43,36 +46,40 @@ export function initConfig(config: Config) {
     return initObj.config;
 }
 
-export const writeCallback: RurDevCallback = function (
-    url,
-    file,
-) {
-    if (file.file.length) {
-        const merge: Array<string> = initObj.config.merge;
-        file.file.forEach((name) => {
-            const wjmc = name.replace(
-                initObj.config.suffixReg,
-                '',
-            );
-            merge.forEach((key) => {
-                const reg = new RegExp(
-                    `^(${key})[A-Z]([a-z|A-Z])+?$`,
+export const writeCallback: RurDevCallback =
+    async function (url, file, urls) {
+        if (file.file.length) {
+            const merge: Array<string> =
+                initObj.config.merge;
+            file.file.forEach((name) => {
+                const wjmc = name.replace(
+                    initObj.config.suffixReg,
+                    '',
                 );
-                const rex = reg.exec(wjmc);
-                if (rex && rex.length > 0) {
-                    const sk = rex[1] + 's';
-                    initObj[sk].push({
-                        name: wjmc,
-                        url,
-                    });
-                }
+                merge.forEach((key) => {
+                    const reg = new RegExp(
+                        `^(${key})[A-Z]([a-z|A-Z])+?$`,
+                    );
+                    const rex = reg.exec(wjmc);
+                    if (rex && rex.length > 0) {
+                        const sk = rex[1] + 's';
+                        initObj[sk].push({
+                            name: wjmc,
+                            url,
+                        });
+                    }
+                });
             });
-        });
-    }
-};
+        }
+        if (url == getDirUrl()) {
+            const add = await main(urls);
+            file.dirs.push(...add);
+        }
+    };
 
-export async function main() {
+export async function main(urls?: Array<string>) {
     const merge: Array<string> = initObj.config.merge;
+    const add: Array<string> = [];
     merge.forEach((key) => {
         let arr = initObj[key + 's'];
         if (arr.length > 0) {
@@ -92,14 +99,15 @@ export async function main() {
                 );
             });
             const issurl = join(dirUrl, key + 's');
+            const ssurl = join(issurl, initObj.config.gene);
+            urls?.push(ssurl);
             fsMkdir(issurl, () => {
-                fsOpen(
-                    join(issurl, initObj.config.gene),
-                    sts.join('\n'),
-                );
+                fsOpen(ssurl, sts.join('\n'));
             });
+            add.push(key + 's');
         }
     });
+    return add;
 }
 
 export async function runDev(
@@ -116,5 +124,4 @@ export async function runDev(
         },
         writeCallback,
     );
-    await main();
 }

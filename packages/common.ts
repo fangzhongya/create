@@ -6,6 +6,8 @@ import {
     write,
     mkdir,
     readFile,
+    access,
+    constants,
 } from 'node:fs';
 import { join } from 'node:path';
 
@@ -24,50 +26,58 @@ export function unmergeObject<T>(
     i?: boolean,
 ): T {
     let c;
-    if (a instanceof Array) {
-        if (j > 0 && i) {
-            c = Object.assign([], a);
-            if (b instanceof Array) {
-                for (const v of b) {
-                    if (!a.includes(v)) {
-                        c.push(v);
+    if (typeof b == 'undefined') {
+        c = a;
+    } else {
+        if (a instanceof Array) {
+            if (j > 0 && i) {
+                c = Object.assign([], a);
+                if (b instanceof Array) {
+                    for (const v of b) {
+                        if (!a.includes(v)) {
+                            c.push(v);
+                        }
+                    }
+                } else {
+                    if (!a.includes(b)) {
+                        c.push(b);
                     }
                 }
             } else {
-                if (!a.includes(b)) {
-                    c.push(b);
-                }
+                c = b;
             }
-        } else {
-            c = b;
-        }
-    } else if (typeof a == 'object') {
-        const cv = Object.prototype.toString.call(a);
-        const ct = Object.prototype.toString.call(b);
-        if (
-            a &&
-            typeof b == 'object' &&
-            cv == ct &&
-            j > 0
-        ) {
-            c = { ...a };
-            const n = j - 1;
-            if (n > 0) {
-                for (const key in b) {
-                    const v = a[key];
-                    const t = b[key];
-                    c[key] = mergeObject(v, t, n, i);
+        } else if (typeof a == 'object') {
+            const cv = Object.prototype.toString.call(a);
+            const ct = Object.prototype.toString.call(b);
+            if (
+                a &&
+                typeof b == 'object' &&
+                cv == ct &&
+                j > 0
+            ) {
+                c = { ...a };
+                const n = j - 1;
+                if (n > 0) {
+                    for (const key in b) {
+                        const v = a[key];
+                        const t = b[key];
+                        c[key] = mergeObject(v, t, n, i);
+                    }
+                } else {
+                    for (const key in b) {
+                        if (typeof b[key] == 'undefined') {
+                            c[key] = b[key] || a[key];
+                        } else {
+                            c[key] = b[key];
+                        }
+                    }
                 }
             } else {
-                for (const key in b) {
-                    c[key] = b[key];
-                }
+                c = b;
             }
         } else {
             c = b;
         }
-    } else {
-        c = b;
     }
     return c;
 }
@@ -86,48 +96,56 @@ export function mergeObject<T>(
     j: number = 0,
     i?: boolean,
 ): T {
-    if (a instanceof Array) {
-        if (j > 0 && i) {
-            if (b instanceof Array) {
-                for (const v of b) {
-                    if (!a.includes(v)) {
-                        a.push(v);
+    if (typeof b == 'undefined') {
+        return a;
+    } else {
+        if (a instanceof Array) {
+            if (j > 0 && i) {
+                if (b instanceof Array) {
+                    for (const v of b) {
+                        if (!a.includes(v)) {
+                            a.push(v);
+                        }
+                    }
+                } else {
+                    if (!a.includes(b)) {
+                        a.push(b);
                     }
                 }
             } else {
-                if (!a.includes(b)) {
-                    a.push(b);
-                }
+                a = b;
             }
-        } else {
-            a = b;
-        }
-    } else if (typeof a == 'object') {
-        const cv = Object.prototype.toString.call(a);
-        const ct = Object.prototype.toString.call(b);
-        if (
-            a &&
-            typeof b == 'object' &&
-            cv == ct &&
-            j > 0
-        ) {
-            const n = j - 1;
-            if (n > 0) {
-                for (const key in b) {
-                    const v = a[key];
-                    const t = b[key];
-                    a[key] = mergeObject(v, t, n, i);
+        } else if (typeof a == 'object') {
+            const cv = Object.prototype.toString.call(a);
+            const ct = Object.prototype.toString.call(b);
+            if (
+                a &&
+                typeof b == 'object' &&
+                cv == ct &&
+                j > 0
+            ) {
+                const n = j - 1;
+                if (n > 0) {
+                    for (const key in b) {
+                        const v = a[key];
+                        const t = b[key];
+                        a[key] = mergeObject(v, t, n, i);
+                    }
+                } else {
+                    for (const key in b) {
+                        if (typeof b[key] == 'undefined') {
+                            a[key] = b[key] || a[key];
+                        } else {
+                            a[key] = b[key];
+                        }
+                    }
                 }
             } else {
-                for (const key in b) {
-                    a[key] = b[key];
-                }
+                a = b;
             }
         } else {
             a = b;
         }
-    } else {
-        a = b;
     }
     return a;
 }
@@ -147,6 +165,10 @@ export type RurDevCallback = (
     urls: Array<string>,
 ) => void;
 
+export type IsMatch = (
+    url: string,
+    name: string,
+) => boolean;
 /**
  * 读取文件内容
  */
@@ -158,6 +180,30 @@ export function fsReadFile(url: string): Promise<string> {
             }
             resolve(dataStr);
         });
+    });
+}
+
+// 传入文件夹的路径看是否存在，存在不用管，不存在则直接创建文件夹
+/**
+ * 判断文件夹是否存在，不存在可以直接创建
+ * @param reaPath {String} 文件路径
+ * @returns {Promise<boolean>}
+ */
+export function fsAccess(
+    reaPath: string,
+): Promise<boolean> {
+    return new Promise((resolve) => {
+        try {
+            access(reaPath, constants.F_OK, (err) => {
+                if (err) {
+                    resolve(false);
+                } else {
+                    resolve(true);
+                }
+            });
+        } catch (e) {
+            resolve(false);
+        }
     });
 }
 
@@ -286,14 +332,19 @@ export function fsMkdir(
 export function writeInit(
     url: string,
     callback?: RurDevCallback,
+    isDirs?: IsMatch,
+    isFile?: IsMatch,
 ): Promise<Array<string>> {
     return new Promise(async (resolve) => {
         if (url) {
             const data = await fsReaddir(url);
-            await writeFileUrl(url, data, callback);
-            const arr = data.file.map((name) => {
-                return join(url, name);
-            });
+            const arr = await writeFileUrl(
+                url,
+                data,
+                callback,
+                isDirs,
+                isFile,
+            );
             resolve(arr);
         } else {
             resolve([]);
@@ -310,22 +361,50 @@ export function writeInit(
  */
 function writeFileUrl(
     url: string,
-    file: FsReaddir,
+    files: FsReaddir,
     callback?: RurDevCallback,
+    isDirs?: IsMatch,
+    isFile?: IsMatch,
 ): Promise<Array<string>> {
     return new Promise(async (resolve) => {
         const arr: Array<string> = [];
-        if (file.dirs.length > 0) {
-            for (let i = 0; i < file.dirs.length; i++) {
-                const urls = await writeInit(
-                    join(url, file.dirs[i]),
-                    callback,
-                );
-                arr.push(...urls);
+        const dirs: Array<string> = [];
+        if (files.dirs.length > 0) {
+            for (let i = 0; i < files.dirs.length; i++) {
+                const dir = files.dirs[i];
+                let is = true;
+                if (isDirs) {
+                    is = isDirs(url, dir);
+                }
+                if (is) {
+                    dirs.push(dir);
+                    const urls = await writeInit(
+                        join(url, dir),
+                        callback,
+                        isDirs,
+                        isFile,
+                    );
+                    arr.push(...urls);
+                }
             }
         }
+        files.dirs = dirs;
+        const file: Array<string> = [];
+        if (files.file.length > 0) {
+            files.file.forEach((name) => {
+                let is = true;
+                if (isFile) {
+                    is = isFile(url, name);
+                }
+                if (is) {
+                    file.push(name);
+                    arr.push(join(url, name));
+                }
+            });
+        }
+        files.file = file;
         if (callback) {
-            callback(url, file, arr);
+            callback(url, files, arr);
         }
         resolve(arr);
     });
@@ -341,4 +420,40 @@ export function getSuffixReg(
         }
     }
     return new RegExp(`\\.(${ex.join('|')})$`);
+}
+
+export function isMatchs(
+    key: string,
+    matchs?: Array<string | RegExp>,
+): boolean {
+    if (matchs && matchs.length > 0) {
+        for (const value of matchs) {
+            if (typeof value == 'string') {
+                return key.startsWith(value);
+            } else {
+                return value.test(key);
+            }
+        }
+        return false;
+    } else {
+        return true;
+    }
+}
+
+export function isMatchexts(
+    key: string,
+    matchs?: Array<string | RegExp>,
+): boolean {
+    if (matchs && matchs.length > 0) {
+        for (const value of matchs) {
+            if (typeof value == 'string') {
+                return key.endsWith(value);
+            } else {
+                return value.test(key);
+            }
+        }
+        return false;
+    } else {
+        return true;
+    }
 }

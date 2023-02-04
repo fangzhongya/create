@@ -5,12 +5,24 @@ import {
     unmergeObject,
     writeInit,
     getSuffixReg,
+    isMatchs,
+    isMatchexts,
 } from './common';
-import type { RurDevCallback } from './common';
+import type {
+    FsReaddir,
+    IsMatch,
+    RurDevCallback,
+} from './common';
 
 interface Objunkn {
     [key: string]: any;
 }
+
+export type FileDatas = (
+    url: string,
+    files: FsReaddir,
+    name?: string | Array<string>,
+) => Array<string>;
 
 export interface Config {
     /**
@@ -21,6 +33,26 @@ export interface Config {
      * 生成的文件名称
      */
     gene?: string;
+
+    /**
+     * 匹配目录数组
+     * 从头开始匹配
+     */
+    matchs?: Array<string | RegExp>;
+    /**
+     * 匹配文件路径
+     * 从尾部开始匹配
+     */
+    matchexts?: Array<string | RegExp>;
+
+    /**
+     * 文件生成方法
+     */
+    fileTop?: FileDatas;
+    fileDirs?: FileDatas;
+    fileFile?: FileDatas;
+    fileEnd?: FileDatas;
+
     [key: string]: any;
 }
 
@@ -33,10 +65,34 @@ const defaultConfig: Config = {
      * 文件后缀
      */
     extensions: ['js', 'ts'],
+
+    /**
+     * 匹配目录数组
+     * 从头开始匹配
+     */
+    matchs: [],
+    /**
+     * 匹配文件路径
+     * 从尾部开始匹配
+     */
+    matchexts: [],
     /**
      * 生成的文件名称
      */
     gene: 'index.ts',
+
+    fileTop() {
+        return [];
+    },
+    fileDirs(_url, _files, name) {
+        return [`export * from './${name}';`];
+    },
+    fileFile(_url, _files, name) {
+        return [`export * from './${name}';`];
+    },
+    fileEnd() {
+        return [];
+    },
 };
 
 const initObj: Objunkn = {};
@@ -54,7 +110,7 @@ export function initConfig(config: Config) {
     return initObj.config;
 }
 
-function getDirUrl(dir?: string) {
+export function getDirUrl(dir?: string) {
     return resolve(
         process.cwd(),
         dir || initObj.config.dir || defaultConfig.dir,
@@ -74,8 +130,16 @@ export const writeCallback: RurDevCallback = function (
 ) {
     const gene = getGene();
     const arr: Array<string> = [];
-    console.log('urls', urls);
-    console.log('file.dirs', file.dirs);
+    const fileTop =
+        initObj.config.fileTop || defaultConfig.fileTop;
+    if (fileTop) {
+        arr.push(...fileTop(url, file));
+    }
+    const fileDirs =
+        initObj.config.fileDirs || defaultConfig.fileDirs;
+    const fileFile =
+        initObj.config.fileFile || defaultConfig.fileFile;
+
     if (file.dirs) {
         file.dirs.forEach((name) => {
             const diru = join(url, name);
@@ -87,7 +151,9 @@ export const writeCallback: RurDevCallback = function (
                 }
             }
             if (is) {
-                arr.push(`export * from './${name}';`);
+                if (fileDirs) {
+                    arr.push(...fileDirs(url, file, name));
+                }
             }
         });
     }
@@ -98,22 +164,49 @@ export const writeCallback: RurDevCallback = function (
                     initObj.config.suffixReg,
                     '',
                 );
-                arr.push(`export * from './${wjmc}';`);
+                if (fileFile) {
+                    arr.push(...fileFile(url, file, wjmc));
+                }
             }
         });
     }
+
+    const fileEnd =
+        initObj.config.fileEnd || defaultConfig.fileEnd;
+    if (fileEnd) {
+        arr.push(...fileEnd(url, file, arr));
+    }
+
     if (arr.length > 0) {
         fsOpen(join(url, gene), arr.join('\n'));
     }
 };
 
+const isMatchFile: IsMatch = function (url, name) {
+    return isMatchexts(join(url, name), initObj.matchexts);
+};
+
+const isMatchDir: IsMatch = function (url, name) {
+    const dirUrl = resolve(
+        process.cwd(),
+        initObj.config.dir,
+    );
+    const dir = join(url, name).replace(dirUrl, '');
+    return isMatchs(dir, initObj.matchs);
+};
+
 async function main(callback?: RurDevCallback) {
-    await writeInit(getDirUrl(), (...arr) => {
-        writeCallback(...arr);
-        if (callback) {
-            callback(...arr);
-        }
-    });
+    await writeInit(
+        getDirUrl(),
+        (...arr) => {
+            if (callback) {
+                callback(...arr);
+            }
+            writeCallback(...arr);
+        },
+        isMatchDir,
+        isMatchFile,
+    );
 }
 
 export async function runDev(

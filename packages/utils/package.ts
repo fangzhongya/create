@@ -22,10 +22,10 @@ export async function runDev(
             }
         },
         (...arr) => {
-            writeCallback(...arr);
             if (callback) {
                 callback(...arr);
             }
+            writeCallback(...arr);
         },
     );
     await main();

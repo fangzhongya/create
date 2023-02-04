@@ -1,4 +1,4 @@
-import { resolve } from 'node:path';
+import { resolve, join } from 'node:path';
 
 import {
     fsOpen,
@@ -7,9 +7,12 @@ import {
     mergeObject,
     writeInit,
     getSuffixReg,
+    fsAccess,
+    isMatchs,
+    isMatchexts,
 } from './common';
 
-import type { RurDevCallback } from './common';
+import type { IsMatch, RurDevCallback } from './common';
 
 interface Objunkn {
     [key: string]: any;
@@ -36,6 +39,16 @@ export interface Config {
      * 文件后缀
      */
     extensions?: Array<string>;
+    /**
+     * 匹配目录数组
+     * 从头开始匹配
+     */
+    matchs?: Array<string | RegExp>;
+    /**
+     * 匹配文件路径
+     * 从尾部开始匹配
+     */
+    matchexts?: Array<string | RegExp>;
 
     /**
      * package 文件名称
@@ -45,6 +58,10 @@ export interface Config {
      * 是否替换原来配置
      */
     cover?: boolean;
+    /**
+     * 是否run 校验 dist 文件
+     */
+    check?: boolean;
     /**
      * 匹配数组
      * '' 表示匹配当前文件名
@@ -102,6 +119,17 @@ const defaultConfig: Config = {
     extensions: ['js', 'ts'],
 
     /**
+     * 匹配目录数组
+     * 从头开始匹配
+     */
+    matchs: [],
+    /**
+     * 匹配文件路径
+     * 从尾部开始匹配
+     */
+    matchexts: [],
+
+    /**
      * package 文件名称
      */
     package: './package.json',
@@ -109,6 +137,10 @@ const defaultConfig: Config = {
      * 是否替换原来配置
      */
     cover: false,
+    /**
+     * 是否run 校验 dist 文件
+     */
+    check: false,
     /**
      * 匹配数组
      * '' 表示匹配当前文件名
@@ -217,6 +249,14 @@ async function getPackage(pac?: string) {
 }
 
 /**
+ * 获取package 配置对象
+ */
+function setPackageJoon(v: Object, pac?: string) {
+    const packageUrl = getPackageUrl(pac);
+    fsOpen(packageUrl, JSON.stringify(v, null, 4));
+}
+
+/**
  * 设置package 配置
  */
 function setPackage() {
@@ -256,11 +296,7 @@ function setPackage() {
         jb,
         true,
     );
-
-    fsOpen(
-        getPackageUrl(),
-        JSON.stringify(initObj.packageObj, null, 4),
-    );
+    setPackageJoon(initObj.packageObj);
 }
 
 function getPackageUrl(dir?: string) {
@@ -279,6 +315,19 @@ function getDirUrl(dir?: string) {
     );
 }
 
+const isMatchFile: IsMatch = function (url, name) {
+    return isMatchexts(join(url, name), initObj.matchexts);
+};
+
+const isMatchDir: IsMatch = function (url, name) {
+    const dirUrl = resolve(
+        process.cwd(),
+        initObj.config.dir,
+    );
+    const dir = join(url, name).replace(dirUrl, '');
+    return isMatchs(dir, initObj.matchs);
+};
+
 /**
  * 处理目录
  * @param callback
@@ -288,21 +337,23 @@ async function main(callback?: RurDevCallback) {
         initObj.config.package,
     );
     setExportsObj('');
-    await writeInit(getDirUrl(), (url, file, urls) => {
-        console.log('urls', urls);
-        console.log('file.file', file.file);
-
-        file.file.forEach((name) => {
-            const wjmc = name.replace(
-                initObj.config.suffixReg,
-                '',
-            );
-            setExportsObj(url, wjmc);
-        });
-        if (callback) {
-            callback(url, file, urls);
-        }
-    });
+    await writeInit(
+        getDirUrl(),
+        (url, file, urls) => {
+            if (callback) {
+                callback(url, file, urls);
+            }
+            file.file.forEach((name) => {
+                const wjmc = name.replace(
+                    initObj.config.suffixReg,
+                    '',
+                );
+                setExportsObj(url, wjmc);
+            });
+        },
+        isMatchDir,
+        isMatchFile,
+    );
     setPackage();
 }
 
@@ -322,4 +373,63 @@ export async function runDev(
         configCallback(initObj.config);
     }
     await main(callback);
+
+    if (initObj.config.check) {
+        await checkDist();
+    }
+}
+
+async function deleteNon(
+    obj: { [key: string]: any },
+    arr: Array<string>,
+) {
+    for (const key of arr) {
+        if (obj[key]) {
+            let v = obj[key];
+            if (typeof v == 'string') {
+                const is = await fsAccess(
+                    resolve(process.cwd(), obj[key]),
+                );
+                if (!is) {
+                    delete obj[key];
+                }
+            } else {
+                v = await deleteNon(v, Object.keys(v));
+                if (Object.keys(v).length == 0) {
+                    delete obj[key];
+                } else {
+                    obj[key] = v;
+                }
+            }
+        }
+    }
+    return obj;
+}
+
+export async function checkDist(config: Config = {}) {
+    config = unmergeObject(
+        initObj.config || defaultConfig,
+        config,
+        1,
+    );
+    let packageObj =
+        initObj.packageObj ||
+        (await getPackage(config.package));
+
+    packageObj = await deleteNon(packageObj, [
+        'main',
+        'module',
+        'types',
+    ]);
+    let exports = packageObj.exports || {};
+    exports = await deleteNon(
+        exports,
+        Object.keys(exports),
+    );
+    if (Object.keys(exports).length == 0) {
+        delete packageObj.exports;
+    } else {
+        packageObj.exports = exports;
+    }
+    setPackageJoon(packageObj, config.package);
 }
