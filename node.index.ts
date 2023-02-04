@@ -1,5 +1,2 @@
-import { runDev } from './packages/package';
-function index() {
-    runDev();
-}
-index();
+import { runDev } from '@fangzhongya/create/package';
+runDev();

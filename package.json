@@ -23,20 +23,40 @@
         "test": "vitest test"
     },
     "devDependencies": {
+        "@fangzhongya/create": "^0.1.0",
         "@types/node": "^18.11.18",
         "tsup": "^6.5.0",
         "typescript": "^4.9.5",
         "vitest": "^0.28.3"
     },
-    "dependencies": {},
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "typesVersions": {
+        "*": {
+            "*": [
+                "./dist/*"
+            ]
+        }
+    },
+    "files": [
+        "dist"
+    ],
     "exports": {
         ".": {
             "require": "./dist/index.cjs",
             "import": "./dist/index.js",
             "types": "./dist/index.d.ts"
+        },
+        "./utils": {
+            "require": "./dist/utils/index.cjs",
+            "import": "./dist/utils/index.js",
+            "types": "./dist/utils/index.d.ts"
+        },
+        "./utils/package": {
+            "require": "./dist/utils/package.cjs",
+            "import": "./dist/utils/package.js",
+            "types": "./dist/utils/package.d.ts"
         },
         "./common": {
             "require": "./dist/common.cjs",
@@ -57,26 +77,6 @@
             "require": "./dist/package.cjs",
             "import": "./dist/package.js",
             "types": "./dist/package.d.ts"
-        },
-        "./utils": {
-            "require": "./dist/utils/index.cjs",
-            "import": "./dist/utils/index.js",
-            "types": "./dist/utils/index.d.ts"
-        },
-        "./utils/package": {
-            "require": "./dist/utils/package.cjs",
-            "import": "./dist/utils/package.js",
-            "types": "./dist/utils/package.d.ts"
-        }
-    },
-    "files": [
-        "dist"
-    ],
-    "typesVersions": {
-        "*": {
-            "*": [
-                "./dist/*"
-            ]
         }
     }
 }
