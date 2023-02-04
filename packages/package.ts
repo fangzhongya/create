@@ -180,6 +180,7 @@ export function initConfig(config: Config) {
     const files = initObj.config.files || [];
     mergeObject(files, [initObj.config.dist], 1, true);
     initObj.config.files = files;
+
     const typesVersions =
         initObj.config.typesVersions || {};
     mergeObject(
@@ -193,16 +194,36 @@ export function initConfig(config: Config) {
         true,
     );
     initObj.config.typesVersions = typesVersions;
-    const tsup = initObj.config.tsup || {};
-    if (Object.keys(tsup).length == 0) {
-        if (initObj.config.type == 'module') {
-            initObj.config.tsup = tsupObj.module;
-        } else {
-            initObj.config.tsup = tsupObj.default;
-        }
-    }
 
     return initObj.config;
+}
+
+/**
+ * 获取 tsup 数据
+ * @param config 配置数据
+ * @param packageObj  package 文件数据
+ * @returns
+ */
+function getTsup(config?: Config, packageObj?: Objunkn) {
+    if (config && Object.keys(config).length > 0) {
+        config = initConfig(config);
+    } else {
+        config = initObj.config || defaultConfig;
+    }
+    packageObj = packageObj || initObj.packageObj;
+    const type = packageObj?.type;
+    let tsup = config?.tsup || {};
+    if (Object.keys(tsup).length == 0) {
+        if (type == 'module') {
+            tsup = tsupObj.module;
+        } else {
+            tsup = tsupObj.default;
+        }
+    }
+    if (initObj.config) {
+        initObj.config.tsup = tsup;
+    }
+    return tsup;
 }
 
 function setExportsObj(
@@ -240,11 +261,12 @@ function setExportsObj(
 /**
  * 获取package 配置对象
  */
-async function getPackage(pac?: string) {
+async function getPackageObj(pac?: string) {
     const packageUrl = getPackageUrl(pac);
     if (packageUrl) {
         const st = await fsReadFile(packageUrl);
-        return JSON.parse(st);
+        initObj.packageObj = JSON.parse(st);
+        return initObj.packageObj;
     }
 }
 
@@ -333,9 +355,6 @@ const isMatchDir: IsMatch = function (url, name) {
  * @param callback
  */
 async function main(callback?: RurDevCallback) {
-    initObj.packageObj = await getPackage(
-        initObj.config.package,
-    );
     setExportsObj('');
     await writeInit(
         getDirUrl(),
@@ -369,6 +388,8 @@ export async function runDev(
     callback?: RurDevCallback,
 ) {
     initConfig(config);
+    await getPackageObj();
+    getTsup();
     if (configCallback) {
         configCallback(initObj.config);
     }
@@ -414,7 +435,7 @@ export async function checkDist(config: Config = {}) {
     );
     let packageObj =
         initObj.packageObj ||
-        (await getPackage(config.package));
+        (await getPackageObj(config.package));
 
     packageObj = await deleteNon(packageObj, [
         'main',
