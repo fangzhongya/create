@@ -26,7 +26,6 @@
         "@fangzhongya/create": "link:dist",
         "@fangzhongya/utils": "^0.0.6",
         "@types/node": "^18.11.19",
-        "dist": "link:dist",
         "tsup": "^6.5.0",
         "typescript": "^4.9.5",
         "vitest": "^0.28.4"
@@ -42,6 +41,11 @@
         "dist"
     ],
     "exports": {
+        "./package": {
+            "require": "./dist/package.cjs",
+            "import": "./dist/package.js",
+            "types": "./dist/package.d.ts"
+        },
         "./utils": {
             "require": "./dist/utils/index.cjs",
             "import": "./dist/utils/index.js",
@@ -52,20 +56,15 @@
             "import": "./dist/utils/package.js",
             "types": "./dist/utils/package.d.ts"
         },
-        "./export": {
-            "require": "./dist/export.cjs",
-            "import": "./dist/export.js",
-            "types": "./dist/export.d.ts"
-        },
         "./package-export": {
             "require": "./dist/package-export.cjs",
             "import": "./dist/package-export.js",
             "types": "./dist/package-export.d.ts"
         },
-        "./package": {
-            "require": "./dist/package.cjs",
-            "import": "./dist/package.js",
-            "types": "./dist/package.d.ts"
+        "./export": {
+            "require": "./dist/export.cjs",
+            "import": "./dist/export.js",
+            "types": "./dist/export.d.ts"
         }
     }
 }

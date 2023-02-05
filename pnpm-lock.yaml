@@ -1,19 +1,17 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@fangzhongya/create': 0.1.6-3
+  '@fangzhongya/create': link:dist
   '@fangzhongya/utils': ^0.0.6
   '@types/node': ^18.11.19
-  dist: link:dist
   tsup: ^6.5.0
   typescript: ^4.9.5
   vitest: ^0.28.4
 
 devDependencies:
-  '@fangzhongya/create': 0.1.6-3
+  '@fangzhongya/create': link:dist
   '@fangzhongya/utils': 0.0.6
   '@types/node': 18.11.19
-  dist: link:dist
   tsup: 6.5.0_typescript@4.9.5
   typescript: 4.9.5
   vitest: 0.28.4
@@ -235,10 +233,6 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
-
-  /@fangzhongya/create/0.1.6-3:
-    resolution: {integrity: sha512-/3wcGUHNP+3/NIwuLqs0cgkKoKSUofkwuTAR3zh8iKSH5rVoEXUoMgZueXYZzxtpdKTp8bUOG5hEdSVjsr0AXg==}
-    dev: true
 
   /@fangzhongya/utils/0.0.6:
     resolution: {integrity: sha512-CBMG28FHEaEt2yQt9Pv3cVvzBVKVnm4UGVbJwputF4yu443C7RVn3GN0yNVKTDXKus/cdIAH6iNDScQYq7i3Og==}
