@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.1.0",
+    "version": "0.1.6",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -23,11 +23,12 @@
         "test": "vitest test"
     },
     "devDependencies": {
-        "@fangzhongya/create": "^0.1.0",
-        "@types/node": "^18.11.18",
+        "@fangzhongya/create": "^0.1.3",
+        "@fangzhongya/utils": "^0.0.5",
+        "@types/node": "^18.11.19",
         "tsup": "^6.5.0",
         "typescript": "^4.9.5",
-        "vitest": "^0.28.3"
+        "vitest": "^0.28.4"
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",

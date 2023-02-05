@@ -2,8 +2,13 @@ import { resolve, join } from 'node:path';
 import {
     runDev as exportRunDev,
     getDirUrl,
+    exportOpen,
 } from '../export';
-import { fsMkdir, fsOpen, unmergeObject } from '../common';
+import {
+    fsMkdir,
+    unmergeObject,
+    styleLog,
+} from '../common';
 import type { RurDevCallback } from '../common';
 import type { Config as ConfigExport } from '../export';
 export interface Config extends ConfigExport {
@@ -30,6 +35,58 @@ const defaultConfig: Config = {
      */
     merge: ['is'],
 };
+
+export function utilOpen(
+    issurl: string,
+    ssurl: string,
+    sts: string,
+    urls?: Array<string>,
+) {
+    fsMkdir(issurl, (reaPath, is, ml) => {
+        const logs: Array<string> = [];
+        if (is) {
+            if (ml) {
+                logs.push(
+                    styleLog('dir', {
+                        bag: 2,
+                    }),
+                );
+                logs.push(
+                    styleLog('add', {
+                        text: 2,
+                        italic: true,
+                    }),
+                );
+                logs.push(
+                    styleLog(reaPath, {
+                        text: 2,
+                        revert: true,
+                    }),
+                );
+                console.log(logs.join(' '));
+            }
+        } else {
+            logs.push(
+                styleLog('dir', {
+                    bag: 1,
+                }),
+            );
+            logs.push(
+                styleLog(reaPath, {
+                    text: 1,
+                    revert: true,
+                }),
+            );
+            console.log(logs.join(' '));
+        }
+
+        exportOpen(ssurl, sts, (kurl, _type, is) => {
+            if (is) {
+                urls?.push(kurl);
+            }
+        });
+    });
+}
 
 export function initConfig(config: Config) {
     initObj.config = unmergeObject(
@@ -100,10 +157,7 @@ export async function main(urls?: Array<string>) {
             });
             const issurl = join(dirUrl, key + 's');
             const ssurl = join(issurl, initObj.config.gene);
-            urls?.push(ssurl);
-            fsMkdir(issurl, () => {
-                fsOpen(ssurl, sts.join('\n'));
-            });
+            utilOpen(issurl, ssurl, sts.join('\n'), urls);
             add.push(key + 's');
         }
     });

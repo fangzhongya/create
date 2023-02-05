@@ -7,11 +7,13 @@ import {
     getSuffixReg,
     isMatchs,
     isMatchexts,
+    styleLog,
 } from './common';
 import type {
     FsReaddir,
     IsMatch,
     RurDevCallback,
+    FsOpenCallback,
 } from './common';
 
 interface Objunkn {
@@ -97,6 +99,57 @@ const defaultConfig: Config = {
 
 const initObj: Objunkn = {};
 
+export function exportOpen(
+    url: string,
+    str: string,
+    callback?: FsOpenCallback,
+) {
+    fsOpen(url, str, (kurl, type, is) => {
+        const logs: Array<string> = [];
+        logs.push(
+            styleLog('file', {
+                bag: 2,
+            }),
+        );
+        if (type == 1) {
+            logs.push(
+                styleLog('add', {
+                    text: 2,
+                    italic: true,
+                }),
+            );
+        } else if (type == 2) {
+            logs.push(
+                styleLog('update', {
+                    italic: true,
+                    text: 4,
+                }),
+            );
+        }
+        if (is) {
+            logs.push(
+                styleLog(kurl, {
+                    text: 2,
+                    revert: true,
+                }),
+            );
+        } else {
+            logs.push(
+                styleLog(kurl, {
+                    text: 1,
+                    revert: true,
+                }),
+            );
+        }
+
+        console.log(logs.join(' '));
+
+        if (callback) {
+            callback(kurl, type, is);
+        }
+    });
+}
+
 export function initConfig(config: Config) {
     initObj.config = unmergeObject(
         defaultConfig,
@@ -123,64 +176,67 @@ function getGene(gene?: string): string {
     );
 }
 
-export const writeCallback: RurDevCallback = function (
-    url,
-    file,
-    urls,
-) {
-    const gene = getGene();
-    const arr: Array<string> = [];
-    const fileTop =
-        initObj.config.fileTop || defaultConfig.fileTop;
-    if (fileTop) {
-        arr.push(...fileTop(url, file));
-    }
-    const fileDirs =
-        initObj.config.fileDirs || defaultConfig.fileDirs;
-    const fileFile =
-        initObj.config.fileFile || defaultConfig.fileFile;
+export const writeCallback: RurDevCallback =
+    async function (url, file, urls) {
+        const gene = getGene();
+        const arr: Array<string> = [];
+        const fileTop =
+            initObj.config.fileTop || defaultConfig.fileTop;
+        if (fileTop) {
+            arr.push(...fileTop(url, file));
+        }
 
-    if (file.dirs) {
-        file.dirs.forEach((name) => {
-            const diru = join(url, name);
-            let is = false;
-            for (const kurl of urls) {
-                if (kurl.startsWith(diru)) {
-                    is = true;
-                    break;
-                }
-            }
-            if (is) {
-                if (fileDirs) {
-                    arr.push(...fileDirs(url, file, name));
-                }
-            }
-        });
-    }
-    if (file.file) {
-        file.file.forEach((name) => {
-            if (name != gene) {
-                const wjmc = name.replace(
-                    initObj.config.suffixReg,
-                    '',
-                );
-                if (fileFile) {
-                    arr.push(...fileFile(url, file, wjmc));
-                }
-            }
-        });
-    }
+        const fileDirs =
+            initObj.config.fileDirs ||
+            defaultConfig.fileDirs;
+        const fileFile =
+            initObj.config.fileFile ||
+            defaultConfig.fileFile;
 
-    const fileEnd =
-        initObj.config.fileEnd || defaultConfig.fileEnd;
-    if (fileEnd) {
-        arr.push(...fileEnd(url, file, arr));
-    }
+        if (file.dirs) {
+            file.dirs.forEach((name) => {
+                const diru = join(url, name);
+                let is = false;
+                for (const kurl of urls) {
+                    if (kurl.startsWith(diru)) {
+                        is = true;
+                        break;
+                    }
+                }
+                if (is) {
+                    if (fileDirs) {
+                        arr.push(
+                            ...fileDirs(url, file, name),
+                        );
+                    }
+                }
+            });
+        }
+        if (file.file) {
+            file.file.forEach((name) => {
+                if (name != gene) {
+                    const wjmc = name.replace(
+                        initObj.config.suffixReg,
+                        '',
+                    );
+                    if (fileFile) {
+                        arr.push(
+                            ...fileFile(url, file, wjmc),
+                        );
+                    }
+                }
+            });
+        }
 
-    if (arr.length > 0) {
-        fsOpen(join(url, gene), arr.join('\n'));
-    }
-};
+        const fileEnd =
+            initObj.config.fileEnd || defaultConfig.fileEnd;
+        if (fileEnd) {
+            arr.push(...fileEnd(url, file, arr));
+        }
+        if (arr.length > 0) {
+            exportOpen(join(url, gene), arr.join('\n'));
+        }
+    };
 
 const isMatchFile: IsMatch = function (url, name) {
     return isMatchexts(join(url, name), initObj.matchexts);

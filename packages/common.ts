@@ -11,6 +11,10 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
+import { styleLog } from '@fangzhongya/utils/log/styleLog';
+
+export { styleLog };
+
 /**
  * 合并两个对象的值
  * @param a 合并到的对象
@@ -159,6 +163,12 @@ export interface Objunkn {
     [key: string]: any;
 }
 
+export type FsOpenCallback = (
+    path: string,
+    type: number,
+    is: boolean,
+) => void;
+
 export type RurDevCallback = (
     url: string,
     file: FsReaddir,
@@ -176,7 +186,7 @@ export function fsReadFile(url: string): Promise<string> {
     return new Promise((resolve) => {
         readFile(url, 'utf-8', (err, dataStr) => {
             if (err) {
-                console.log(err);
+                console.log('2', err);
             }
             resolve(dataStr);
         });
@@ -232,7 +242,7 @@ export function fsReaddir(
                         stat(filedir, (err, stats) => {
                             i++;
                             if (err) {
-                                console.log(err);
+                                console.log('4', err);
                             } else {
                                 const isFile =
                                     stats.isFile(); //是文件
@@ -274,7 +284,7 @@ export function fsReaddir(
 export function fsOpen(
     path: string,
     json: string,
-    callback?: () => void,
+    callback?: FsOpenCallback,
 ) {
     // 检查文件是否存在于当前目录，且是否可写。
     open(path, 'wx', (err, fd) => {
@@ -282,20 +292,24 @@ export function fsOpen(
             if (err.code === 'EEXIST') {
                 writeFile(path, json, 'utf-8', (err) => {
                     if (err) {
-                        console.log(err);
+                        console.log('6', err);
+                        if (callback)
+                            callback(path, 2, false);
                     } else {
-                        if (callback) callback();
+                        if (callback)
+                            callback(path, 2, true);
                     }
                 });
             } else {
-                console.log(err);
+                if (callback) callback(path, 0, false);
             }
         } else {
             write(fd, json, (err) => {
                 if (err) {
-                    console.log(err);
+                    console.log('8', err);
+                    if (callback) callback(path, 1, false);
                 } else {
-                    if (callback) callback();
+                    if (callback) callback(path, 1, true);
                 }
             });
         }
@@ -309,15 +323,22 @@ export function fsOpen(
  */
 export function fsMkdir(
     reaPath: string,
-    callback?: () => void,
+    callback?: (
+        reaPath: string,
+        is: boolean,
+        p?: string,
+    ) => void,
 ) {
     // 不存在文件夹，直接创建 {recursive: true} 这个配置项是配置自动创建多个文件夹
-    mkdir(reaPath, { recursive: true }, (err) => {
+    mkdir(reaPath, { recursive: true }, (err, path) => {
         if (err) {
-            console.log(err);
+            console.log('2', err);
+            if (callback) {
+                callback(reaPath, false);
+            }
         } else {
             if (callback) {
-                callback();
+                callback(reaPath, true, path);
             }
         }
     });

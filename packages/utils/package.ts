@@ -1,5 +1,5 @@
 import { runDev as packageRunDev } from '../package-export';
-import { writeCallback, main, initConfig } from './index';
+import { writeCallback, initConfig } from './index';
 import type { RurDevCallback } from '../common';
 import type { Config as ConfigIndex } from './index';
 import type { Config as ConfigPackage } from '../package-export';
@@ -28,5 +28,4 @@ export async function runDev(
             writeCallback(...arr);
         },
     );
-    await main();
 }

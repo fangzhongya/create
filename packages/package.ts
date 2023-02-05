@@ -10,6 +10,7 @@ import {
     fsAccess,
     isMatchs,
     isMatchexts,
+    styleLog,
 } from './common';
 
 import type { IsMatch, RurDevCallback } from './common';
@@ -91,6 +92,11 @@ export interface Config {
 }
 
 const tsupObj = {
+    arr: {
+        main: 'require',
+        module: 'import',
+        types: 'types',
+    },
     module: {
         main: 'cjs',
         module: 'js',
@@ -102,6 +108,9 @@ const tsupObj = {
         types: 'd.ts',
     },
 };
+
+const tsuparr = Object.keys(tsupObj.arr);
+const tsups = Object.values(tsupObj.arr);
 
 const defaultConfig: Config = {
     /**
@@ -140,7 +149,7 @@ const defaultConfig: Config = {
     /**
      * 是否run 校验 dist 文件
      */
-    check: false,
+    check: true,
     /**
      * 匹配数组
      * '' 表示匹配当前文件名
@@ -226,6 +235,108 @@ function getTsup(config?: Config, packageObj?: Objunkn) {
     return tsup;
 }
 
+function packageLog(
+    key: string,
+    set: unknown,
+    xg: unknown,
+) {
+    const logs = [];
+    logs.push(
+        styleLog('package', {
+            bag: 7,
+        }),
+    );
+
+    if (xg) {
+        logs.push(
+            styleLog('update', {
+                text: 4,
+                italic: true,
+            }),
+        );
+    } else {
+        logs.push(
+            styleLog('add', {
+                text: 2,
+                italic: true,
+            }),
+        );
+    }
+
+    logs.push(
+        styleLog(key, {
+            bold: true,
+        }),
+    );
+
+    logs.push(
+        styleLog(JSON.stringify(set, null, 4), {
+            text: 2,
+        }),
+    );
+
+    if (xg) {
+        logs.push(
+            styleLog(JSON.stringify(xg, null, 4), {
+                text: 1,
+                lineThrough: true,
+            }),
+        );
+    }
+    console.log(logs.join(' '));
+}
+
+function packageExportsLog(
+    key: string,
+    set: unknown,
+    xg: unknown,
+) {
+    const logs = [];
+    logs.push(
+        styleLog('package', {
+            bag: 7,
+        }),
+    );
+
+    if (xg) {
+        logs.push(
+            styleLog('update', {
+                text: 4,
+                italic: true,
+            }),
+        );
+    } else {
+        logs.push(
+            styleLog('add', {
+                text: 2,
+                italic: true,
+            }),
+        );
+    }
+
+    logs.push(
+        styleLog('exports.' + key, {
+            bold: true,
+        }),
+    );
+
+    logs.push(
+        styleLog(JSON.stringify(set, null, 4), {
+            text: 2,
+        }),
+    );
+
+    if (xg) {
+        logs.push(
+            styleLog(JSON.stringify(xg, null, 4), {
+                text: 1,
+                lineThrough: true,
+            }),
+        );
+    }
+    console.log(logs.join(' '));
+}
+
 function setExportsObj(
     url: string,
     name: string = 'index',
@@ -237,25 +348,27 @@ function setExportsObj(
     if (name != 'index') {
         key += '/' + name;
     }
-    const obj: ObjStr = {};
-    if (initObj.config.tsup?.main) {
-        obj.require = `./${
-            initObj.config.dist + ust
-        }/${name}.${initObj.config.tsup.main}`;
-    }
-    if (initObj.config.tsup?.module) {
-        obj.import = `./${
-            initObj.config.dist + ust
-        }/${name}.${initObj.config.tsup.module}`;
-    }
-    if (initObj.config.tsup?.types) {
-        obj.types = `./${
-            initObj.config.dist + ust
-        }/${name}.${initObj.config.tsup.types}`;
-    }
-    if (initObj.config.exports) {
-        initObj.config.exports[key] = obj;
-    }
+
+    const obj = initObj.config.exports[key] || {};
+
+    tsuparr.forEach((k, index) => {
+        if (initObj.config.tsup) {
+            let tsup = initObj.config.tsup[k];
+            if (tsup) {
+                const wk = tsups[index];
+                const vkey = `./${
+                    initObj.config.dist + ust
+                }/${name}.${tsup}`;
+                packageExportsLog(
+                    key + '.' + wk,
+                    vkey,
+                    obj[wk],
+                );
+                obj[wk] = vkey;
+            }
+        }
+    });
+    initObj.config.exports[key] = obj;
 }
 
 /**
@@ -283,14 +396,20 @@ function setPackageJoon(v: Object, pac?: string) {
  */
 function setPackage() {
     const jb = initObj.config.cover ? 0 : 10;
-    if (initObj.config.tsup?.main) {
-        initObj.packageObj.main = `./${initObj.config.dist}/index.${initObj.config.tsup.main}`;
-    }
-    if (initObj.config.tsup?.module) {
-        initObj.packageObj.module = `./${initObj.config.dist}/index.${initObj.config.tsup.module}`;
-    }
-    if (initObj.config.tsup?.types) {
-        initObj.packageObj.types = `./${initObj.config.dist}/index.${initObj.config.tsup.types}`;
+
+    tsuparr.forEach((k) => {
+        if (initObj.config.tsup) {
+            let tsup = initObj.config.tsup[k];
+            if (tsup) {
+                const key = `./${initObj.config.dist}/index.${tsup}`;
+                packageLog(k, key, initObj.packageObj[k]);
+                initObj.packageObj[k] = key;
+            }
+        }
+    });
+
+    if (!initObj.packageObj?.exports['.']) {
+        setExportsObj('');
     }
 
     let tv = initObj.packageObj.typesVersions || {};
@@ -318,6 +437,7 @@ function setPackage() {
         jb,
         true,
     );
+
     setPackageJoon(initObj.packageObj);
 }
 
@@ -355,7 +475,9 @@ const isMatchDir: IsMatch = function (url, name) {
  * @param callback
  */
 async function main(callback?: RurDevCallback) {
-    setExportsObj('');
+    initObj.packageObj.exports =
+        initObj.packageObj.exports || {};
+
     await writeInit(
         getDirUrl(),
         (url, file, urls) => {
@@ -400,23 +522,62 @@ export async function runDev(
     }
 }
 
+function checkLog(keyok: string, value: unknown) {
+    const logs = [];
+
+    logs.push(
+        styleLog('package', {
+            bag: 7,
+        }),
+    );
+    logs.push(
+        styleLog('delete', {
+            text: 5,
+            italic: true,
+        }),
+    );
+    logs.push(
+        styleLog(keyok, {
+            bold: true,
+        }),
+    );
+    logs.push(
+        styleLog(JSON.stringify(value, null, 4), {
+            text: 1,
+            lineThrough: true,
+        }),
+    );
+    console.log(logs.join(' '));
+}
+
 async function deleteNon(
     obj: { [key: string]: any },
     arr: Array<string>,
+    objkey?: string,
 ) {
     for (const key of arr) {
         if (obj[key]) {
             let v = obj[key];
+            let keyok = key;
+            if (objkey) {
+                keyok = objkey + '.' + key;
+            }
             if (typeof v == 'string') {
                 const is = await fsAccess(
                     resolve(process.cwd(), obj[key]),
                 );
                 if (!is) {
+                    checkLog(keyok, obj[key]);
                     delete obj[key];
                 }
             } else {
-                v = await deleteNon(v, Object.keys(v));
+                v = await deleteNon(
+                    v,
+                    Object.keys(v),
+                    keyok,
+                );
                 if (Object.keys(v).length == 0) {
+                    checkLog(keyok, obj[key]);
                     delete obj[key];
                 } else {
                     obj[key] = v;
@@ -437,17 +598,15 @@ export async function checkDist(config: Config = {}) {
         initObj.packageObj ||
         (await getPackageObj(config.package));
 
-    packageObj = await deleteNon(packageObj, [
-        'main',
-        'module',
-        'types',
-    ]);
+    packageObj = await deleteNon(packageObj, tsuparr);
+
     let exports = packageObj.exports || {};
     exports = await deleteNon(
         exports,
         Object.keys(exports),
     );
     if (Object.keys(exports).length == 0) {
+        checkLog('exports', packageObj.exports);
         delete packageObj.exports;
     } else {
         packageObj.exports = exports;
