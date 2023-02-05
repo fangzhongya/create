@@ -1,3 +1,5 @@
 import { runDev } from '@fangzhongya/create/package';
 
-runDev();
+runDev({
+    matchexts: [/(?<![\/|\\]common.ts)$/],
+});

@@ -196,7 +196,7 @@ export function fsMkdir(
     // 不存在文件夹，直接创建 {recursive: true} 这个配置项是配置自动创建多个文件夹
     mkdir(reaPath, { recursive: true }, (err, path) => {
         if (err) {
-            console.log('2', err);
+            console.log('0', err);
             if (callback) {
                 callback(reaPath, false);
             }
@@ -314,9 +314,13 @@ export function isMatchs(
     if (matchs && matchs.length > 0) {
         for (const value of matchs) {
             if (typeof value == 'string') {
-                return key.startsWith(value);
+                if (key.startsWith(value)) {
+                    return true;
+                }
             } else {
-                return value.test(key);
+                if (value.test(key)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -332,9 +336,13 @@ export function isMatchexts(
     if (matchs && matchs.length > 0) {
         for (const value of matchs) {
             if (typeof value == 'string') {
-                return key.endsWith(value);
+                if (key.endsWith(value)) {
+                    return true;
+                }
             } else {
-                return value.test(key);
+                if (value.test(key)) {
+                    return true;
+                }
             }
         }
         return false;

@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -23,16 +23,14 @@
         "test": "vitest test"
     },
     "devDependencies": {
-        "@fangzhongya/create": "0.1.5-3",
+        "@fangzhongya/create": "link:dist",
         "@fangzhongya/utils": "^0.0.6",
         "@types/node": "^18.11.19",
+        "dist": "link:dist",
         "tsup": "^6.5.0",
         "typescript": "^4.9.5",
         "vitest": "^0.28.4"
     },
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
     "typesVersions": {
         "*": {
             "*": [
@@ -44,11 +42,6 @@
         "dist"
     ],
     "exports": {
-        ".": {
-            "require": "./dist/index.cjs",
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        },
         "./utils": {
             "require": "./dist/utils/index.cjs",
             "import": "./dist/utils/index.js",
@@ -58,11 +51,6 @@
             "require": "./dist/utils/package.cjs",
             "import": "./dist/utils/package.js",
             "types": "./dist/utils/package.d.ts"
-        },
-        "./common": {
-            "require": "./dist/common.cjs",
-            "import": "./dist/common.js",
-            "types": "./dist/common.d.ts"
         },
         "./export": {
             "require": "./dist/export.cjs",

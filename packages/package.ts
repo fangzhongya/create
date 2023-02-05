@@ -458,16 +458,22 @@ function getDirUrl(dir?: string) {
 }
 
 const isMatchFile: IsMatch = function (url, name) {
-    return isMatchexts(join(url, name), initObj.matchexts);
+    return isMatchexts(
+        join(url, name),
+        initObj.config.matchexts || defaultConfig.matchexts,
+    );
 };
 
 const isMatchDir: IsMatch = function (url, name) {
     const dirUrl = resolve(
         process.cwd(),
-        initObj.config.dir,
+        initObj.config.dir || defaultConfig.dir,
     );
     const dir = join(url, name).replace(dirUrl, '');
-    return isMatchs(dir, initObj.matchs);
+    return isMatchs(
+        dir,
+        initObj.config.matchs || defaultConfig.matchs,
+    );
 };
 
 /**
