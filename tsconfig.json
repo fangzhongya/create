@@ -26,7 +26,8 @@
   },
   "include": [
     "packages/**/*.ts",
-    "node.index.ts"
+    "node.index.ts",
+    "node.tests.ts"
   ],
   "ts-node": {
     "esm": true

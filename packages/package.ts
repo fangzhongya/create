@@ -149,7 +149,7 @@ const defaultConfig: Config = {
     /**
      * 是否run 校验 dist 文件
      */
-    check: true,
+    check: false,
     /**
      * 匹配数组
      * '' 表示匹配当前文件名
@@ -342,15 +342,12 @@ function packageExportsLog(
     console.log(logs.join(' '));
 }
 
-function setExportsObj(
-    url: string,
-    name: string = 'index',
-) {
+function setExportsObj(url: string, name: string) {
     const ust = url
         .replace(getDirUrl(), '')
         .replace(/\\/g, '/');
     let key: string = '.' + ust;
-    if (name != 'index') {
+    if (name) {
         key += '/' + name;
     }
 
@@ -414,7 +411,7 @@ function setPackage() {
     });
 
     if (!initObj.packageObj?.exports['.']) {
-        setExportsObj('');
+        setExportsObj('', '');
     }
 
     let tv = initObj.packageObj.typesVersions || {};

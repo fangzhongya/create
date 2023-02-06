@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.0",
+    "version": "0.2.0-3",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -19,6 +19,7 @@
     },
     "scripts": {
         "dev": "ts-node node.index.ts",
+        "dev:tests": "ts-node node.tests.ts",
         "build": "tsup",
         "test": "vitest test"
     },
@@ -38,15 +39,17 @@
         }
     },
     "files": [
+        "*.d.ts",
         "dist"
     ],
     "exports": {
-        "./package": {
-            "require": "./dist/package.cjs",
-            "import": "./dist/package.js",
-            "types": "./dist/package.d.ts"
+        "./*": "./*",
+        "./tests/index": {
+            "require": "./dist/tests/index.cjs",
+            "import": "./dist/tests/index.js",
+            "types": "./dist/tests/index.d.ts"
         },
-        "./utils": {
+        "./utils/index": {
             "require": "./dist/utils/index.cjs",
             "import": "./dist/utils/index.js",
             "types": "./dist/utils/index.d.ts"
@@ -66,15 +69,18 @@
             "import": "./dist/export.js",
             "types": "./dist/export.d.ts"
         },
-        "./tests": {
-            "require": "./dist/tests/index.cjs",
-            "import": "./dist/tests/index.js",
-            "types": "./dist/tests/index.d.ts"
-        },
         "./file": {
             "require": "./dist/file.cjs",
             "import": "./dist/file.js",
             "types": "./dist/file.d.ts"
+        },
+        "./package": {
+            "require": "./dist/package.cjs",
+            "import": "./dist/package.js",
+            "types": "./dist/package.d.ts"
         }
-    }
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts"
 }
