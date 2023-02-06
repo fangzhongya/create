@@ -36,6 +36,21 @@ const defaultConfig: Config = {
     merge: ['is'],
 };
 
+function getLogs() {
+    const logs = [];
+    logs.push(
+        styleLog('[@fangzhongya/create]', {
+            text: 3,
+        }),
+    );
+    logs.push(
+        styleLog('dir', {
+            text: 3,
+        }),
+    );
+    return logs;
+}
+
 export function utilOpen(
     issurl: string,
     ssurl: string,
@@ -43,14 +58,9 @@ export function utilOpen(
     urls?: Array<string>,
 ) {
     fsMkdir(issurl, (reaPath, is, ml) => {
-        const logs: Array<string> = [];
+        const logs = getLogs();
         if (is) {
             if (ml) {
-                logs.push(
-                    styleLog('dir', {
-                        bag: 2,
-                    }),
-                );
                 logs.push(
                     styleLog('add', {
                         text: 2,
@@ -66,11 +76,6 @@ export function utilOpen(
                 console.log(logs.join(' '));
             }
         } else {
-            logs.push(
-                styleLog('dir', {
-                    bag: 1,
-                }),
-            );
             logs.push(
                 styleLog(reaPath, {
                     text: 1,

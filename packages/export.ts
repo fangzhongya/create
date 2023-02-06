@@ -99,18 +99,29 @@ const defaultConfig: Config = {
 
 const initObj: Objunkn = {};
 
+function getLogs() {
+    const logs = [];
+    logs.push(
+        styleLog('[@fangzhongya/create]', {
+            text: 3,
+        }),
+    );
+    logs.push(
+        styleLog('file', {
+            text: 4,
+        }),
+    );
+    return logs;
+}
+
 export function exportOpen(
     url: string,
     str: string,
     callback?: FsOpenCallback,
 ) {
     fsOpen(url, str, (kurl, type, is) => {
-        const logs: Array<string> = [];
-        logs.push(
-            styleLog('file', {
-                bag: 2,
-            }),
-        );
+        const logs = getLogs();
+
         if (type == 1) {
             logs.push(
                 styleLog('add', {

@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",

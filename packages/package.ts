@@ -235,17 +235,27 @@ function getTsup(config?: Config, packageObj?: Objunkn) {
     return tsup;
 }
 
+function getLogs() {
+    const logs = [];
+    logs.push(
+        styleLog('[@fangzhongya/create]', {
+            text: 3,
+        }),
+    );
+    logs.push(
+        styleLog('package', {
+            text: 5,
+        }),
+    );
+    return logs;
+}
+
 function packageLog(
     key: string,
     set: unknown,
     xg: unknown,
 ) {
-    const logs = [];
-    logs.push(
-        styleLog('package', {
-            bag: 7,
-        }),
-    );
+    const logs = getLogs();
 
     if (xg) {
         logs.push(
@@ -291,12 +301,7 @@ function packageExportsLog(
     set: unknown,
     xg: unknown,
 ) {
-    const logs = [];
-    logs.push(
-        styleLog('package', {
-            bag: 7,
-        }),
-    );
+    const logs = getLogs();
 
     if (xg) {
         logs.push(
@@ -529,16 +534,10 @@ export async function runDev(
 }
 
 function checkLog(keyok: string, value: unknown) {
-    const logs = [];
-
-    logs.push(
-        styleLog('package', {
-            bag: 7,
-        }),
-    );
+    const logs = getLogs();
     logs.push(
         styleLog('delete', {
-            text: 5,
+            text: 6,
             italic: true,
         }),
     );
