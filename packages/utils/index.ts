@@ -135,12 +135,12 @@ export const writeCallback: RurDevCallback =
             });
         }
         if (url == getDirUrl()) {
-            const add = await main(urls);
+            const add = await mainHandle(urls);
             file.dirs.push(...add);
         }
     };
 
-export async function main(urls?: Array<string>) {
+async function mainHandle(urls?: Array<string>) {
     const merge: Array<string> = initObj.config.merge;
     const add: Array<string> = [];
     merge.forEach((key) => {

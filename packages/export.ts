@@ -268,7 +268,7 @@ const isMatchDir: IsMatch = function (url, name) {
     );
 };
 
-async function main(callback?: RurDevCallback) {
+async function mainHandle(callback?: RurDevCallback) {
     await writeInit(
         getDirUrl(),
         (...arr) => {
@@ -294,5 +294,5 @@ export async function runDev(
             initObj.config = v;
         }
     }
-    await main(callback);
+    await mainHandle(callback);
 }

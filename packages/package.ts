@@ -342,12 +342,16 @@ function packageExportsLog(
     console.log(logs.join(' '));
 }
 
-function setExportsObj(url: string, name: string) {
+function setExportsObj(
+    url: string,
+    name: string,
+    isk?: boolean,
+) {
     const ust = url
         .replace(getDirUrl(), '')
         .replace(/\\/g, '/');
     let key: string = '.' + ust;
-    if (name) {
+    if (!isk) {
         key += '/' + name;
     }
 
@@ -498,9 +502,8 @@ async function mainHandle(callback?: RurDevCallback) {
         isMatchFile,
     );
 
-    if (!initObj.packageObj?.exports['.']) {
-        setExportsObj('', 'index');
-    }
+    setExportsObj('', 'index', true);
+
     setPackageJoon(initObj.packageObj);
 }
 
