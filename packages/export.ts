@@ -5,8 +5,8 @@ import {
     unmergeObject,
     writeInit,
     getSuffixReg,
-    isMatchs,
-    isMatchexts,
+    matchsStart,
+    matchsEnd,
     styleLog,
 } from './common';
 import type {
@@ -250,7 +250,7 @@ export const writeCallback: RurDevCallback =
     };
 
 const isMatchFile: IsMatch = function (url, name) {
-    return isMatchexts(
+    return matchsEnd(
         join(url, name),
         initObj.config.matchexts || defaultConfig.matchexts,
     );
@@ -262,7 +262,7 @@ const isMatchDir: IsMatch = function (url, name) {
         initObj.config.dir || defaultConfig.dir,
     );
     const dir = join(url, name).replace(dirUrl, '');
-    return isMatchs(
+    return matchsStart(
         dir,
         initObj.config.matchs || defaultConfig.matchs,
     );

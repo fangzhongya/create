@@ -8,8 +8,8 @@ import {
     writeInit,
     getSuffixReg,
     fsAccess,
-    isMatchs,
-    isMatchexts,
+    matchsStart,
+    matchsEnd,
     styleLog,
 } from './common';
 
@@ -351,7 +351,7 @@ function setExportsObj(url: string, name: string) {
         key += '/' + name;
     }
 
-    const obj = initObj.config.exports[key] || {};
+    const obj = initObj.packageObj.exports[key] || {};
 
     tsuparr.forEach((k, index) => {
         if (initObj.config.tsup) {
@@ -370,7 +370,7 @@ function setExportsObj(url: string, name: string) {
             }
         }
     });
-    initObj.config.exports[key] = obj;
+    initObj.packageObj.exports[key] = obj;
 }
 
 /**
@@ -396,7 +396,10 @@ function setPackageJoon(v: Object, pac?: string) {
 /**
  * 设置package 配置
  */
-function setPackage() {
+function setPackageDefault() {
+    initObj.packageObj.exports =
+        initObj.packageObj.exports || {};
+
     const jb = initObj.config.cover ? 0 : 10;
 
     tsuparr.forEach((k) => {
@@ -409,10 +412,6 @@ function setPackage() {
             }
         }
     });
-
-    if (!initObj.packageObj?.exports['.']) {
-        setExportsObj('', '');
-    }
 
     let tv = initObj.packageObj.typesVersions || {};
     initObj.packageObj.typesVersions = mergeObject(
@@ -439,8 +438,6 @@ function setPackage() {
         jb,
         true,
     );
-
-    setPackageJoon(initObj.packageObj);
 }
 
 function getPackageUrl(dir?: string) {
@@ -460,7 +457,7 @@ function getDirUrl(dir?: string) {
 }
 
 const isMatchFile: IsMatch = function (url, name) {
-    return isMatchexts(
+    return matchsEnd(
         join(url, name),
         initObj.config.matchexts || defaultConfig.matchexts,
     );
@@ -472,7 +469,7 @@ const isMatchDir: IsMatch = function (url, name) {
         initObj.config.dir || defaultConfig.dir,
     );
     const dir = join(url, name).replace(dirUrl, '');
-    return isMatchs(
+    return matchsStart(
         dir,
         initObj.config.matchs || defaultConfig.matchs,
     );
@@ -482,10 +479,7 @@ const isMatchDir: IsMatch = function (url, name) {
  * 处理目录
  * @param callback
  */
-async function main(callback?: RurDevCallback) {
-    initObj.packageObj.exports =
-        initObj.packageObj.exports || {};
-
+async function mainHandle(callback?: RurDevCallback) {
     await writeInit(
         getDirUrl(),
         (url, file, urls) => {
@@ -503,7 +497,11 @@ async function main(callback?: RurDevCallback) {
         isMatchDir,
         isMatchFile,
     );
-    setPackage();
+
+    if (!initObj.packageObj?.exports['.']) {
+        setExportsObj('', 'index');
+    }
+    setPackageJoon(initObj.packageObj);
 }
 
 /**
@@ -526,7 +524,10 @@ export async function runDev(
             initObj.config = v;
         }
     }
-    await main(callback);
+
+    setPackageDefault();
+
+    await mainHandle(callback);
 
     if (initObj.config.check) {
         await checkDist();

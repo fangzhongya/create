@@ -1,6 +1,6 @@
 import { resolve, join } from 'node:path';
 import {
-    runDev as exportRunDev,
+    runDev as runDevExport,
     getDirUrl,
     exportOpen,
 } from '../export';
@@ -174,7 +174,7 @@ export async function runDev(
     config: Config = {},
     configCallback?: (config: Config) => Config | void,
 ) {
-    await exportRunDev(
+    await runDevExport(
         config,
         (c) => {
             initConfig(c);

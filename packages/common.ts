@@ -18,9 +18,12 @@ import { getImportUrlSuffix } from '@fangzhongya/utils/urls/getImportUrlSuffix';
 import { getReplaceUrl } from '@fangzhongya/utils/urls/getReplaceUrl';
 import { getUrlCatalogue } from '@fangzhongya/utils/urls/getUrlCatalogue';
 import { getUrlCatalogueObj } from '@fangzhongya/utils/urls/getUrlCatalogueObj';
-
+import { matchsEnd } from '@fangzhongya/utils/judge/matchsEnd';
+import { matchsStart } from '@fangzhongya/utils/judge/matchsStart';
 export {
     styleLog,
+    matchsEnd,
+    matchsStart,
     mergeObject,
     unmergeObject,
     getImportUrlSuffix,
@@ -350,48 +353,4 @@ export function getSuffixReg(
         }
     }
     return new RegExp(`\\.(${ex.join('|')})$`);
-}
-
-export function isMatchs(
-    key: string,
-    matchs?: Array<string | RegExp>,
-): boolean {
-    if (matchs && matchs.length > 0) {
-        for (const value of matchs) {
-            if (typeof value == 'string') {
-                if (key.startsWith(value)) {
-                    return true;
-                }
-            } else {
-                if (value.test(key)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    } else {
-        return true;
-    }
-}
-
-export function isMatchexts(
-    key: string,
-    matchs?: Array<string | RegExp>,
-): boolean {
-    if (matchs && matchs.length > 0) {
-        for (const value of matchs) {
-            if (typeof value == 'string') {
-                if (key.endsWith(value)) {
-                    return true;
-                }
-            } else {
-                if (value.test(key)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    } else {
-        return true;
-    }
 }

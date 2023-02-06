@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.0-3",
+    "version": "0.2.0-5",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -59,25 +59,30 @@
             "import": "./dist/utils/package.js",
             "types": "./dist/utils/package.d.ts"
         },
-        "./package-export": {
-            "require": "./dist/package-export.cjs",
-            "import": "./dist/package-export.js",
-            "types": "./dist/package-export.d.ts"
+        "./file": {
+            "require": "./dist/file.cjs",
+            "import": "./dist/file.js",
+            "types": "./dist/file.d.ts"
         },
         "./export": {
             "require": "./dist/export.cjs",
             "import": "./dist/export.js",
             "types": "./dist/export.d.ts"
         },
-        "./file": {
-            "require": "./dist/file.cjs",
-            "import": "./dist/file.js",
-            "types": "./dist/file.d.ts"
-        },
         "./package": {
             "require": "./dist/package.cjs",
             "import": "./dist/package.js",
             "types": "./dist/package.d.ts"
+        },
+        "./package-export": {
+            "require": "./dist/package-export.cjs",
+            "import": "./dist/package-export.js",
+            "types": "./dist/package-export.d.ts"
+        },
+        "./index": {
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
         }
     },
     "main": "./dist/index.cjs",

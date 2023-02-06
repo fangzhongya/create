@@ -85,10 +85,10 @@ export function initConfig(config: Config) {
         ) => {
             return [
                 `import { test, expect } from 'vitest';`,
-                `import { ${name} } from '${imp}';`,
+                `import name from '${imp}';`,
                 '',
                 `test('${imp}', () => {`,
-                `        expect(${name}( )).toBe( );`,
+                `        //expect(${name}( )).toBe( );`,
                 ` });`,
             ];
         };

@@ -1,4 +1,4 @@
-import { runDev as packageRunDev } from './package';
+import { runDev as runDevPackage } from './package';
 import { writeCallback, initConfig } from './export';
 import type { Config as ConfigPackage } from './package';
 import type { Config as ConfigExport } from './export';
@@ -13,7 +13,7 @@ export async function runDev(
     configCallback?: (config: Config) => Config | void,
     callback?: RurDevCallback,
 ) {
-    await packageRunDev(
+    await runDevPackage(
         config,
         (defaultConfig) => {
             const c = initConfig(defaultConfig);
