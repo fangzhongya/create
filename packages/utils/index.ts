@@ -44,7 +44,7 @@ function getLogs() {
         }),
     );
     logs.push(
-        styleLog('dir', {
+        styleLog('utils', {
             text: 3,
         }),
     );
@@ -59,6 +59,7 @@ export function utilOpen(
 ) {
     fsMkdir(issurl, (reaPath, is, ml) => {
         const logs = getLogs();
+        logs.push(styleLog('dir', {}));
         if (is) {
             if (ml) {
                 logs.push(
@@ -171,15 +172,19 @@ export async function main(urls?: Array<string>) {
 
 export async function runDev(
     config: Config = {},
-    configCallback?: (config: Config) => void,
+    configCallback?: (config: Config) => Config | void,
 ) {
     await exportRunDev(
         config,
         (c) => {
             initConfig(c);
             if (configCallback) {
-                configCallback(c);
+                const v = configCallback(initObj.config);
+                if (v) {
+                    initObj.config = v;
+                }
             }
+            return initObj.config;
         },
         writeCallback,
     );

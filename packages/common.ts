@@ -12,11 +12,22 @@ import {
 import { join } from 'node:path';
 
 import { styleLog } from '@fangzhongya/utils/log/styleLog';
-
 import { mergeObject } from '@fangzhongya/utils/basic/object/mergeObject';
 import { unmergeObject } from '@fangzhongya/utils/basic/object/unmergeObject';
+import { getImportUrlSuffix } from '@fangzhongya/utils/urls/getImportUrlSuffix';
+import { getReplaceUrl } from '@fangzhongya/utils/urls/getReplaceUrl';
+import { getUrlCatalogue } from '@fangzhongya/utils/urls/getUrlCatalogue';
+import { getUrlCatalogueObj } from '@fangzhongya/utils/urls/getUrlCatalogueObj';
 
-export { styleLog, mergeObject, unmergeObject };
+export {
+    styleLog,
+    mergeObject,
+    unmergeObject,
+    getImportUrlSuffix,
+    getReplaceUrl,
+    getUrlCatalogue,
+    getUrlCatalogueObj,
+};
 
 export interface FsReaddir {
     file: Array<string>;
@@ -31,6 +42,7 @@ export type FsOpenCallback = (
     path: string,
     type: number,
     is: boolean,
+    type2?: number,
 ) => void;
 
 export type RurDevCallback = (
@@ -143,39 +155,72 @@ export function fsReaddir(
  * 以写入模式打开文件。文件会被创建（如果文件不存在）或截断（如果文件存在）。
  * @param {*} path
  * @param {*} json
+ * @param {number} type
+ * 0 文件不存在，或者存在都写入数据
+ * 1 文件不存在 就不写入数据
+ * 2 文件不存在 才写入数据
  * @param {*} callback
  */
 export function fsOpen(
     path: string,
     json: string,
+    type: number = 0,
     callback?: FsOpenCallback,
 ) {
     // 检查文件是否存在于当前目录，且是否可写。
     open(path, 'wx', (err, fd) => {
         if (err) {
             if (err.code === 'EEXIST') {
-                writeFile(path, json, 'utf-8', (err) => {
+                if (type != 2) {
+                    writeFile(
+                        path,
+                        json,
+                        'utf-8',
+                        (err) => {
+                            if (err) {
+                                console.log('6', err);
+                                if (callback)
+                                    callback(
+                                        path,
+                                        2,
+                                        false,
+                                        type,
+                                    );
+                            } else {
+                                if (callback)
+                                    callback(
+                                        path,
+                                        2,
+                                        true,
+                                        type,
+                                    );
+                            }
+                        },
+                    );
+                } else {
+                    if (callback)
+                        callback(path, 2, false, type);
+                }
+            } else {
+                if (callback)
+                    callback(path, 0, false, type);
+            }
+        } else {
+            if (type != 1) {
+                write(fd, json, (err) => {
                     if (err) {
-                        console.log('6', err);
+                        console.log('8', err);
                         if (callback)
-                            callback(path, 2, false);
+                            callback(path, 1, false, type);
                     } else {
                         if (callback)
-                            callback(path, 2, true);
+                            callback(path, 1, true, type);
                     }
                 });
             } else {
-                if (callback) callback(path, 0, false);
+                if (callback)
+                    callback(path, 1, false, type);
             }
-        } else {
-            write(fd, json, (err) => {
-                if (err) {
-                    console.log('8', err);
-                    if (callback) callback(path, 1, false);
-                } else {
-                    if (callback) callback(path, 1, true);
-                }
-            });
         }
     });
 }

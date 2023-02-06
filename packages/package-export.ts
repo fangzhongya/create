@@ -10,7 +10,7 @@ export interface Config
 
 export async function runDev(
     config: Config = {},
-    configCallback?: (config: Config) => void,
+    configCallback?: (config: Config) => Config | void,
     callback?: RurDevCallback,
 ) {
     await packageRunDev(
@@ -18,7 +18,10 @@ export async function runDev(
         (defaultConfig) => {
             const c = initConfig(defaultConfig);
             if (configCallback) {
-                configCallback(c);
+                const v = configCallback(c);
+                return v;
+            } else {
+                return c;
             }
         },
         (...arr) => {

@@ -1,8 +1,6 @@
-import { runDev } from '../packages/package';
 import { test, expect } from 'vitest';
+import { package } from '../packages/package';
 
-test('package runDev', () => {
-    runDev({
-        matchexts: [/(?<!\/common.ts)$/],
-    });
-});
+test('../packages/package', () => {
+        expect(package( )).toBe( );
+ });

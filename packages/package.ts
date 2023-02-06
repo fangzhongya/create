@@ -517,14 +517,17 @@ async function main(callback?: RurDevCallback) {
  */
 export async function runDev(
     config: Config = {},
-    configCallback?: (config: Config) => void,
+    configCallback?: (config: Config) => Config | void,
     callback?: RurDevCallback,
 ) {
     initConfig(config);
     await getPackageObj();
     getTsup();
     if (configCallback) {
-        configCallback(initObj.config);
+        const v = configCallback(initObj.config);
+        if (v) {
+            initObj.config = v;
+        }
     }
     await main(callback);
 

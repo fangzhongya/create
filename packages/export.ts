@@ -107,7 +107,7 @@ function getLogs() {
         }),
     );
     logs.push(
-        styleLog('file', {
+        styleLog('export', {
             text: 4,
         }),
     );
@@ -119,9 +119,9 @@ export function exportOpen(
     str: string,
     callback?: FsOpenCallback,
 ) {
-    fsOpen(url, str, (kurl, type, is) => {
+    fsOpen(url, str, 0, (kurl, type, is) => {
         const logs = getLogs();
-
+        logs.push(styleLog('file', {}));
         if (type == 1) {
             logs.push(
                 styleLog('add', {
@@ -284,12 +284,15 @@ async function main(callback?: RurDevCallback) {
 
 export async function runDev(
     config: Config = {},
-    configCallback?: (config: Config) => void,
+    configCallback?: (config: Config) => Config | void,
     callback?: RurDevCallback,
 ) {
     initConfig(config);
     if (configCallback) {
-        configCallback(initObj.config);
+        const v = configCallback(initObj.config);
+        if (v) {
+            initObj.config = v;
+        }
     }
     await main(callback);
 }
