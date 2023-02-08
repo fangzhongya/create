@@ -60,10 +60,19 @@ export type IsMatch = (
 ) => boolean;
 /**
  * 读取文件内容
+ * @param url 文件地址
+ * @param type 文件编码
+ * @returns
  */
-export function fsReadFile(url: string): Promise<string> {
+export function fsReadFile(
+    url: string,
+    type: BufferEncoding = 'utf-8',
+): Promise<string> {
+    if (!type || typeof type == 'boolean') {
+        type = 'utf-8';
+    }
     return new Promise((resolve) => {
-        readFile(url, 'utf-8', (err, dataStr) => {
+        readFile(url, type, (err, dataStr) => {
             if (err) {
                 console.log('2', err);
             }

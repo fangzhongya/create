@@ -8,6 +8,7 @@ import {
     matchsStart,
     matchsEnd,
     fsMkdir,
+    fsReadFile,
     styleLog,
     getImportUrlSuffix,
     getUrlCatalogue,
@@ -27,7 +28,7 @@ export type FileDatas = (
     name: string,
     imp: string,
     url?: string,
-    arr?: Array<string>,
+    arr?: string,
     files?: FsReaddir,
 ) => Array<string>;
 
@@ -50,6 +51,10 @@ export interface Config {
      * 是否替换原来配置
      */
     cover?: boolean;
+    /**
+     * 读取当前文件，文件的编码类型，默认utf-8
+     */
+    read?: boolean | string;
     /**
      * 匹配目录数组
      * 从头开始匹配
@@ -82,6 +87,10 @@ const defaultConfig: Config = {
      * 是否替换文件
      */
     cover: false,
+    /**
+     * 读取当前文件，文件的编码类型，默认utf-8
+     */
+    read: false,
     /**
      * 匹配目录数组
      * 从头开始匹配
@@ -228,13 +237,15 @@ function getGene(gene?: FileGene): FileGene {
 }
 
 export const writeCallback: RurDevCallback =
-    async function (url, file) {
+    async function (url, files) {
         const gene = getGene();
         const fileSet =
             initObj.config.fileSet || defaultConfig.fileSet;
-
-        if (file.file) {
-            file.file.forEach((name) => {
+        const read =
+            initObj.config.read || defaultConfig.read;
+        if (files.file) {
+            for (let i = 0; i < files.file.length; i++) {
+                const name = files.file[i];
                 const wjmc = name.replace(
                     initObj.config.suffixReg,
                     '',
@@ -246,20 +257,27 @@ export const writeCallback: RurDevCallback =
                 );
                 const arr: Array<string> = [];
                 if (fileSet) {
+                    let text = '';
+                    if (read) {
+                        text = await fsReadFile(
+                            join(url, name),
+                            read,
+                        );
+                    }
                     arr.push(
                         ...fileSet(
                             wjmc,
                             imp,
                             url,
-                            arr,
-                            file,
+                            text,
+                            files,
                         ),
                     );
                 }
                 if (arr.length > 0) {
                     fileOpen(gu, arr.join('\n'));
                 }
-            });
+            }
         }
     };
 
