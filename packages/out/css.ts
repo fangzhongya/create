@@ -4,7 +4,16 @@ import {
 } from './index';
 import type { Config as ConfigOut } from './index';
 import { unmergeObject } from '../common';
-export interface Config extends ConfigOut {}
+export interface Config extends ConfigOut {
+    /**
+     * 提出单位
+     */
+    unit?: string;
+    /**
+     * 处理函数
+     */
+    handle?: (n: number) => string;
+}
 
 const defaultConfig: Config = {
     outDir: './css/',
@@ -20,26 +29,51 @@ const defaultConfig: Config = {
      * 是否读取文件
      */
     read: true,
-};
-export function setCss(str: string): string {
-    const reg =
-        /(\d+rem)|(\d+\.\d+rem)|(\.\d+rem)|(-\d+rem)|(-\d+\.\d+rem)/g;
 
-    return str.replace(reg, function (aaa) {
-        //首先转px
-        const pxVal = Number(
-            (parseFloat(aaa) * 108).toFixed(0),
-        );
+    /**
+     * 提出单位
+     */
+    unit: 'rem',
+    /**
+     * 处理函数
+     */
+    handle(n) {
         //px 转 rpx
-        return Math.ceil((pxVal * 750) / 1080) + 'rpx';
+        return (
+            Math.ceil(
+                (Number((n * 108).toFixed(0)) * 750) / 1080,
+            ) + 'rpx'
+        );
+    },
+};
+
+export function setCss(
+    text: string,
+    str: string = 'rem',
+    callback?: (n: number) => string,
+): string {
+    const reg = new RegExp(
+        `(\\d+${str})|(\\d+\\.\\d+${str})|(\\.\\d+${str})|(-\\d+${str})|(-\\d+\\.\\d+${str})`,
+        'g',
+    );
+    return text.replace(reg, function (v) {
+        if (callback) {
+            return callback(parseFloat(v));
+        }
+        return v + 'str';
     });
 }
+
 function setDefault(config: Config) {
     if (!config.fileSet) {
         config.fileSet = (name, url, text) => {
             return [
                 ...getFileNeader(name, url),
-                setCss(text),
+                setCss(
+                    text,
+                    config.unit || defaultConfig.unit,
+                    config.handle || defaultConfig.handle,
+                ),
             ];
         };
     }
