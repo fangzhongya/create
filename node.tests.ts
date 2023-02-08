@@ -1,3 +1,3 @@
-import { runDev } from '@fangzhongya/create/tests';
+import { runDev } from '@fangzhongya/create/out/test';
 
 runDev({});

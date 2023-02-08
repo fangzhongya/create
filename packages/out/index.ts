@@ -7,7 +7,7 @@ import {
 } from '../common';
 import type { Config as ConfigFile } from '../file';
 export interface Config extends ConfigFile {
-    tests?: string;
+    outDir?: string;
 }
 
 interface Objunkn {
@@ -26,7 +26,7 @@ const defaultConfig: Config = {
      */
     extensions: ['js', 'ts'],
 
-    tests: './tests',
+    outDir: './tests/',
     /**
      * 是否替换原来配置
      */
@@ -49,52 +49,65 @@ const defaultConfig: Config = {
     fileSet: undefined,
 };
 
+export function getGeneObj(
+    url: string,
+    name: string,
+    outDir: string,
+) {
+    return getUrlCatalogueObj(
+        getReplaceUrl(
+            join(url, name),
+            resolve(process.cwd(), outDir),
+        ),
+    );
+}
+
+export function getFileNeader(
+    name: string,
+    url: string,
+): Array<string> {
+    return [
+        `/**`,
+        ` * ${join(url, name).replace(/\\/g, '/')}`,
+        ` * ${new Date().toString()}`,
+        ' */',
+    ];
+}
+
 export function initConfig(config: Config) {
     initObj.config = unmergeObject(
         defaultConfig,
         config,
         1,
     );
-
-    const testUrl = resolve(
-        process.cwd(),
-        initObj.config.tests,
-    );
-
-    const gene = initObj.config.gene;
-    if (!gene) {
+    return initObj.config;
+}
+function setDefault() {
+    if (!initObj.config.gene) {
         initObj.config.gene = (
             name: string,
             url: string,
         ) => {
-            const obj = getUrlCatalogueObj(
-                getReplaceUrl(join(url, name), testUrl),
+            const obj = getGeneObj(
+                url,
+                name,
+                initObj.config.outDir,
             );
             return join(
                 obj.catalogue,
-                obj.name + '.test' + obj.suffix,
+                obj.name + obj.suffix,
             );
         };
     }
 
-    const fileSet = initObj.config.fileSet;
-    if (!fileSet) {
+    if (!initObj.config.fileSet) {
         initObj.config.fileSet = (
             name: string,
-            imp: string,
+            url: string,
         ) => {
-            return [
-                `import { test, expect } from 'vitest';`,
-                `import name from '${imp}';`,
-                '',
-                `test('${imp}', () => {`,
-                `        //expect(${name}( )).toBe( );`,
-                ` });`,
-            ];
+            return [...getFileNeader(name, url)];
         };
     }
-
-    return initObj.config;
 }
 
 export async function runDev(
@@ -109,6 +122,7 @@ export async function runDev(
                 initObj.config = v;
             }
         }
+        setDefault();
         return initObj.config;
     });
 }

@@ -21,9 +21,14 @@ interface Objunkn {
 }
 
 export type FileDatas = (
+    // 文件地址
     url: string,
+    // 文件目录对象
     files: FsReaddir,
+    // 目录名称，文件名称 ，text数组
     name?: string | Array<string>,
+    // 文件名
+    wjmc?: string,
 ) => Array<string>;
 
 export interface Config {
@@ -89,7 +94,7 @@ const defaultConfig: Config = {
     fileDirs(_url, _files, name) {
         return [`export * from './${name}';`];
     },
-    fileFile(_url, _files, name) {
+    fileFile(_url, _files, _wjmc, name) {
         return [`export * from './${name}';`];
     },
     fileEnd() {
@@ -232,7 +237,12 @@ export const writeCallback: RurDevCallback =
                     );
                     if (fileFile) {
                         arr.push(
-                            ...fileFile(url, file, wjmc),
+                            ...fileFile(
+                                url,
+                                file,
+                                name,
+                                wjmc,
+                            ),
                         );
                     }
                 }

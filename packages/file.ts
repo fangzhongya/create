@@ -14,7 +14,6 @@ import {
     getUrlCatalogue,
 } from './common';
 import type {
-    FsReaddir,
     IsMatch,
     RurDevCallback,
     FsOpenCallback,
@@ -25,11 +24,16 @@ interface Objunkn {
 }
 
 export type FileDatas = (
+    //文件名称
     name: string,
-    imp: string,
-    url?: string,
-    arr?: string,
-    files?: FsReaddir,
+    //文件目录
+    url: string,
+    //文件内容
+    text: string,
+    // 文件名称，没有后缀的
+    wjm?: string,
+    // 引用路径
+    imp?: string,
 ) => Array<string>;
 
 export type FileGene = (
@@ -266,11 +270,11 @@ export const writeCallback: RurDevCallback =
                     }
                     arr.push(
                         ...fileSet(
-                            wjmc,
-                            imp,
+                            name,
                             url,
                             text,
-                            files,
+                            wjmc,
+                            imp,
                         ),
                     );
                 }
