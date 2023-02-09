@@ -68,21 +68,50 @@ export class FangCss extends FangOut {
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
     }
+    // function setCss(text, str = 'rem') {
+    //     text = text.replace(/\s/g, '  ');
+    //     const reg = new RegExp(
+    //         `\\s*(\\.|-|:|\\s|\\n|\\r|\\()([0-9\\.]+)(${str})(\\n|\\r|\\s|;|\\)|\\})`,
+    //         'g',
+    //     );
+    //     text = text.replace(reg, function (a, b, c,d) {
+    //         let th = c+d;
+    //         if(b == '.'){
+    //             c = '0.'+c;
+    //             th = b + th;
+    //         }
+    //         console.log('th', th);
+    //         return a.replace(th, "100rpx")
+    //     });
+    //     return text.replace(/\s\s/g, ' ');
+    // }
     setCss(
         text: string,
-        str: string = 'rem',
-        callback?: (n: number) => string,
+        str: string,
+        callback?: (
+            n: number,
+            dw: string,
+            yss: string,
+        ) => string,
     ): string {
+        text = text.replace(/ /g, '  ');
         const reg = new RegExp(
-            `(\\d+${str})|(\\d+\\.\\d+${str})|(\\.\\d+${str})|(-\\d+${str})|(-\\d+\\.\\d+${str})`,
+            `\\s*(\\.|-|:|\\s|\\n|\\r|\\()([0-9\\.]+)(${str})(\\n|\\r|\\s|;|\\)|\\})`,
             'g',
         );
-        return text.replace(reg, function (v) {
-            if (callback) {
-                return callback(parseFloat(v));
+        text = text.replace(reg, function (a, b, c, d) {
+            let th = c + d;
+            if (b == '.') {
+                th = b + th;
             }
-            return v + 'str';
+            let thv = th;
+            const s = Number(c);
+            if (callback && !isNaN(s)) {
+                thv = callback(s, d, th);
+            }
+            return a.replace(th, thv);
         });
+        return text.replace(/  /g, ' ');
     }
     getDefaultFileSet(
         //文件名称
