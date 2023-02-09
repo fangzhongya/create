@@ -1,7 +1,8 @@
 import type { Options } from 'tsup';
 
 export const tsup: Options = {
-    entry: ['packages/**/*.ts'],
+    entry: ['class/**/*.ts'],
+    //  entry: ['packages/**/*.ts'],
     format: ['cjs', 'esm'],
     dts: true,
     splitting: true,

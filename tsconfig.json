@@ -26,6 +26,7 @@
   },
   "include": [
     "packages/**/*.ts",
+    "class/**/*.ts",
     "node.index.ts",
     "node.tests.ts"
   ],

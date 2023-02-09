@@ -1,10 +1,13 @@
 import { runDev } from '@fangzhongya/create/package';
 
 runDev({
+    dir: './class/',
     cover: true,
     matchexts: [/(?<![\\|\/]common\.ts)$/],
-    files: ['*.d.ts'],
-    exports: {
-        './*': './*',
+    packageObj: {
+        files: ['*.d.ts'],
+        exports: {
+            './*': './*',
+        },
     },
 });
