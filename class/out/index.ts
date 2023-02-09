@@ -1,5 +1,4 @@
 import { join } from 'node:path';
-import { styleLog } from '@fangzhongya/utils/log/styleLog';
 
 import {
     defaultConfig as defaultConfigFile,
@@ -22,6 +21,7 @@ export const defaultConfig: Config = Object.assign(
     {},
     defaultConfigFile,
     {
+        name: 'out',
         outDir: './',
     },
 );
@@ -31,10 +31,11 @@ export class FangOut extends FangFile {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
+        super();
+        this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
-        console.log('out', this.config);
     }
     getFileNeader(
         name: string,
@@ -78,18 +79,9 @@ export class FangOut extends FangFile {
     ) {
         return [...this.getFileNeader(name, url)];
     }
-    getLogs(type = 'out', c = 6) {
-        const logs = super.getLogs();
-        logs.push(
-            styleLog(type, {
-                text: c,
-            }),
-        );
-        return logs;
-    }
 }
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

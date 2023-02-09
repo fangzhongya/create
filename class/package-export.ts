@@ -20,7 +20,7 @@ export const defaultConfig: Config = Object.assign(
     {},
     defaultConfigExport,
     defaultConfigPackage,
-    {},
+    { name: 'package-export' },
 );
 
 export class FangPackageExport extends FangPackage {
@@ -29,7 +29,9 @@ export class FangPackageExport extends FangPackage {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
+        super();
+        this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
         this._Export = new FangExport(this.config);
@@ -51,16 +53,16 @@ export class FangPackageExport extends FangPackage {
                 if (configCallback) {
                     const v = configCallback(c);
                     if (v) {
-                        return this._Export.initConfig(v);
+                        c = this._Export.initConfig(v);
                     }
                 }
-                return c;
+                this.initConfig(c);
             },
         );
     }
 }
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

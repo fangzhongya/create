@@ -2,17 +2,13 @@ import { getImportUrlSuffix } from '@fangzhongya/utils/urls/getImportUrlSuffix';
 import { getUrlCatalogueLast } from '@fangzhongya/utils/urls/getUrlCatalogueLast';
 import { lineToLargeHump } from '@fangzhongya/utils/name/lineToLargeHump';
 
-import { styleLog } from '@fangzhongya/utils/log/styleLog';
 import { join } from 'node:path';
 import {
     defaultConfig as defaultConfigExport,
     FangExport,
 } from '../export';
 
-import type {
-    Config as ConfigExport,
-    FileDatas,
-} from '../export';
+import type { Config as ConfigExport } from '../export';
 import type {
     RurDevCallback,
     ConfigCallback,
@@ -30,6 +26,7 @@ export const defaultConfig: Config = Object.assign(
     {},
     defaultConfigExport,
     {
+        name: 'vue',
         /**
          * 合并文件头
          */
@@ -72,10 +69,22 @@ export class FangVue extends FangExport {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
-        defaultConfig.fileEnd = this
-            .setFileEnd as FileDatas;
-        this.setDefaultConfig(defaultConfig);
+        super();
+        this.config = {};
+        this._configCallback = callback;
+        defaultConfig.fileEnd = (
+            url: string,
+            files: FsReaddir,
+            arr?: Array<string> | string,
+        ) => {
+            return this.setFileEnd(
+                url,
+                files,
+                arr as string[],
+            );
+        };
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
     }
     setFileEnd(
         url: string,
@@ -98,26 +107,17 @@ export class FangVue extends FangExport {
             );
             return [
                 `import { withInstall } from '${iu}'`,
-                `import ${name} from './src/index.vue'`,
-                `export const ${name} = withInstall(${name}, '${name}');`,
+                `import SrcVue from './src/index.vue'`,
+                `export const ${name} = withInstall(SrcVue, '${name}');`,
                 `export default ${name};`,
             ];
         } else {
             return [];
         }
     }
-    getLogs(type = 'vue', c = 2) {
-        const logs = super.getLogs();
-        logs.push(
-            styleLog(type, {
-                text: c,
-            }),
-        );
-        return logs;
-    }
 }
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

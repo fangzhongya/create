@@ -79,6 +79,7 @@ export const defaultConfig: Config = Object.assign(
     {},
     defaultConfigCom,
     {
+        name: 'package',
         /**
          * 打包文件目录名称
          */
@@ -113,8 +114,10 @@ export class FangPackage extends FangCom {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
+        super();
         this._packageObj = {};
+        this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
     }
@@ -481,20 +484,10 @@ export class FangPackage extends FangCom {
         }
         console.log(logs.join(' '));
     }
-
-    getLogs(type = 'package', c = 5) {
-        const logs = super.getLogs();
-        logs.push(
-            styleLog(type, {
-                text: c,
-            }),
-        );
-        return logs;
-    }
 }
 
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

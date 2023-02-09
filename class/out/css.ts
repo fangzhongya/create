@@ -1,4 +1,3 @@
-import { styleLog } from '@fangzhongya/utils/log/styleLog';
 import {
     FangOut,
     defaultConfig as defaultConfigOut,
@@ -24,6 +23,7 @@ const defaultConfig: Config = Object.assign(
     {},
     defaultConfigOut,
     {
+        name: 'css',
         outDir: './css/',
         /**
          * 文件后缀
@@ -62,7 +62,9 @@ export class FangCss extends FangOut {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
+        super();
+        this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
     }
@@ -103,18 +105,9 @@ export class FangCss extends FangOut {
             ),
         ];
     }
-    getLogs(type = 'css', c = 2) {
-        const logs = super.getLogs();
-        logs.push(
-            styleLog(type, {
-                text: c,
-            }),
-        );
-        return logs;
-    }
 }
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

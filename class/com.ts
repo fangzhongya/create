@@ -55,6 +55,17 @@ export interface Config {
      */
     matchexts?: Array<string | RegExp>;
 
+    /**
+     * 不匹配目录数组
+     * 从头开始匹配
+     */
+    nomatchs?: Array<string | RegExp>;
+    /**
+     * 不匹配文件路径
+     * 从尾部开始匹配
+     */
+    nomatchexts?: Array<string | RegExp>;
+
     [key: string]: any;
 }
 
@@ -65,6 +76,7 @@ export type ConfigCallback = (
 const defaultSuffixReg = /\\.[a-zA-Z]+$/;
 
 export const defaultConfig: Config = {
+    name: 'com',
     /**
      * 打包的文件地址
      */
@@ -92,6 +104,17 @@ export const defaultConfig: Config = {
      * 从尾部开始匹配
      */
     matchexts: [],
+
+    /**
+     * 不匹配目录数组
+     * 从头开始匹配
+     */
+    nomatchs: [],
+    /**
+     * 不匹配文件路径
+     * 从尾部开始匹配
+     */
+    nomatchexts: [],
 };
 
 export function getSuffixReg(ex: Array<string> = []) {
@@ -101,64 +124,19 @@ export function getSuffixReg(ex: Array<string> = []) {
     return new RegExp(`\\.(${ex.join('|')})$`);
 }
 
-export interface Fang {
-    /**
-     * 配置数据
-     */
-    readonly config: Config;
-    /**
-     * 初始化配置数据
-     * @param config
-     * @returns
-     */
-    initConfig: (config: Config) => Config;
-
-    /**
-     * 获取当前位置
-     * @param dir
-     * @returns
-     */
-    getDirUrl: (dir?: string) => string | void;
-    /**
-     * 处理方法
-     */
-    handle: (callback?: RurDevCallback) => void;
-    /**
-     * 回调方法
-     */
-    writeCallback: RurDevCallback;
-    /**
-     * 获取日志头
-     */
-    getLogs: () => Array<string>;
-
-    /**
-     * 执行方法
-     * @param callback
-     * @param config
-     * @param configCallback
-     * @returns
-     */
-    runDev: (
-        callback?: RurDevCallback,
-        config?: Config,
-        configCallback?: ConfigCallback,
-    ) => void;
-}
-
 /**
  * 不清楚怎么定义抽象方法
  */
-export abstract class FangCom implements Fang {
-    _configCallback: ConfigCallback | undefined;
+export class FangCom {
+    _configCallback?: ConfigCallback;
     _defaultConfig: Config;
     config: Config;
     constructor(
-        config: Config = {},
+        config?: Config,
         callback?: ConfigCallback,
     ) {
-        this._configCallback = callback;
         this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
     }
@@ -224,13 +202,33 @@ export abstract class FangCom implements Fang {
     isMatchFile(url: string, name: string) {
         const dirUrl = this.getDirUrl();
         const dir = join(url, name).replace(dirUrl, '');
-        return matchsEnd(dir, this.config.matchexts);
+        const is = matchsEnd(dir, this.config.matchexts);
+        const nomatchexts = this.config.nomatchexts;
+        if (is && nomatchexts && nomatchexts.length > 0) {
+            if (matchsEnd(dir, nomatchexts)) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return is;
+        }
     }
 
     isMatchDir(url: string, name: string) {
         const dirUrl = this.getDirUrl();
         const dir = join(url, name).replace(dirUrl, '');
-        return matchsStart(dir, this.config.matchs);
+        const is = matchsStart(dir, this.config.matchs);
+        const nomatchs = this.config.nomatchs;
+        if (is && nomatchs && nomatchs.length > 0) {
+            if (matchsStart(dir, nomatchs)) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return is;
+        }
     }
     /**
      * 处理方法
@@ -380,6 +378,11 @@ export abstract class FangCom implements Fang {
         logs.push(
             styleLog('[@fangzhongya/create]', {
                 text: 3,
+            }),
+        );
+        logs.push(
+            styleLog(this._defaultConfig.name, {
+                text: 4,
             }),
         );
         return logs;

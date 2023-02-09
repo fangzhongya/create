@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.0-20",
+    "version": "0.2.1",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -49,35 +49,30 @@
             "import": "./dist/export/package.js",
             "types": "./dist/export/package.d.ts"
         },
-        "./export/utils": {
-            "require": "./dist/export/utils.cjs",
-            "import": "./dist/export/utils.js",
-            "types": "./dist/export/utils.d.ts"
-        },
         "./export/vue": {
             "require": "./dist/export/vue.cjs",
             "import": "./dist/export/vue.js",
             "types": "./dist/export/vue.d.ts"
+        },
+        "./export/utils": {
+            "require": "./dist/export/utils.cjs",
+            "import": "./dist/export/utils.js",
+            "types": "./dist/export/utils.d.ts"
         },
         "./out/css": {
             "require": "./dist/out/css.cjs",
             "import": "./dist/out/css.js",
             "types": "./dist/out/css.d.ts"
         },
-        "./out/test": {
-            "require": "./dist/out/test.cjs",
-            "import": "./dist/out/test.js",
-            "types": "./dist/out/test.d.ts"
-        },
         "./out/index": {
             "require": "./dist/out/index.cjs",
             "import": "./dist/out/index.js",
             "types": "./dist/out/index.d.ts"
         },
-        "./com": {
-            "require": "./dist/com.cjs",
-            "import": "./dist/com.js",
-            "types": "./dist/com.d.ts"
+        "./out/test": {
+            "require": "./dist/out/test.cjs",
+            "import": "./dist/out/test.js",
+            "types": "./dist/out/test.d.ts"
         },
         "./export": {
             "require": "./dist/export.cjs",
@@ -89,15 +84,15 @@
             "import": "./dist/file.js",
             "types": "./dist/file.d.ts"
         },
-        "./package": {
-            "require": "./dist/package.cjs",
-            "import": "./dist/package.js",
-            "types": "./dist/package.d.ts"
-        },
         "./package-export": {
             "require": "./dist/package-export.cjs",
             "import": "./dist/package-export.js",
             "types": "./dist/package-export.d.ts"
+        },
+        "./package": {
+            "require": "./dist/package.cjs",
+            "import": "./dist/package.js",
+            "types": "./dist/package.d.ts"
         },
         ".": {
             "require": "./dist/index.cjs",

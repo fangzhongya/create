@@ -1,5 +1,4 @@
 import { resolve, join } from 'node:path';
-import { styleLog } from '@fangzhongya/utils/log/styleLog';
 import { getImportUrlSuffix } from '@fangzhongya/utils/urls/getImportUrlSuffix';
 import { getReplaceUrl } from '@fangzhongya/utils/urls/getReplaceUrl';
 import { getUrlCatalogueObj } from '@fangzhongya/utils/urls/getUrlCatalogueObj';
@@ -52,6 +51,7 @@ export const defaultConfig: Config = Object.assign(
     {},
     defaultConfigCom,
     {
+        name: 'file',
         /**
          * 生成的文件名称
          */
@@ -69,10 +69,11 @@ export class FangFile extends FangCom {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
+        super();
+        this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
-        console.log('file', this.config);
     }
     getDefaultGene(
         name: string,
@@ -135,10 +136,9 @@ export class FangFile extends FangCom {
      * @param urls
      */
     async writeCallback(url: string, readdir: FsReaddir) {
-        console.log('writeCallback', this.config);
         const gene = this.getGene();
         const fileSet = this.getFileSet();
-        let read = this.config.read;
+        const read = this.config.read;
         if (readdir.file) {
             for (let i = 0; i < readdir.file.length; i++) {
                 const name = readdir.file[i];
@@ -150,9 +150,6 @@ export class FangFile extends FangCom {
                 if (fileSet) {
                     let text = '';
                     if (read) {
-                        if (typeof read == 'boolean') {
-                            read = undefined;
-                        }
                         text = await fsReadFile(furl, read);
                     }
                     arr.push(
@@ -171,18 +168,9 @@ export class FangFile extends FangCom {
             }
         }
     }
-    getLogs(type = 'file', c = 4) {
-        const logs = super.getLogs();
-        logs.push(
-            styleLog(type, {
-                text: c,
-            }),
-        );
-        return logs;
-    }
 }
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

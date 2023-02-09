@@ -1,4 +1,3 @@
-import { styleLog } from '@fangzhongya/utils/log/styleLog';
 import { join } from 'node:path';
 import {
     defaultConfig as defaultConfigExport,
@@ -28,6 +27,7 @@ export const defaultConfig: Config = Object.assign(
     {},
     defaultConfigExport,
     {
+        name: 'utils',
         /**
          * 合并文件头
          */
@@ -43,8 +43,10 @@ export class FangUitle extends FangExport {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
+        super();
         this._initObj = {};
+        this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
     }
@@ -118,18 +120,9 @@ export class FangUitle extends FangExport {
         });
         return add;
     }
-    getLogs(type = 'utils', c = 3) {
-        const logs = super.getLogs();
-        logs.push(
-            styleLog(type, {
-                text: c,
-            }),
-        );
-        return logs;
-    }
 }
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

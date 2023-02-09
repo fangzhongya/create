@@ -41,8 +41,11 @@ export type IsMatch = (
  */
 export function fsReadFile(
     url: string,
-    type: string = 'utf-8',
+    type?: string | boolean,
 ): Promise<string> {
+    if (!type || type === true) {
+        type = 'utf-8';
+    }
     return new Promise((resolve) => {
         readFile(
             url,

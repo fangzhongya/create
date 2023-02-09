@@ -1,5 +1,4 @@
 import { join } from 'node:path';
-import { styleLog } from '@fangzhongya/utils/log/styleLog';
 import {
     FangOut,
     defaultConfig as defaultConfigOut,
@@ -16,6 +15,7 @@ const defaultConfig: Config = Object.assign(
     {},
     defaultConfigOut,
     {
+        name: 'test',
         outDir: './tests/',
         /**
          * 是否替换原来配置
@@ -29,10 +29,11 @@ export class FangTest extends FangOut {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
+        super();
+        this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
-        console.log('test', this.config);
     }
     /**
      * 获取输出地址方法
@@ -72,18 +73,9 @@ export class FangTest extends FangOut {
             `});`,
         ];
     }
-    getLogs(type = 'test', c = 6) {
-        const logs = super.getLogs();
-        logs.push(
-            styleLog(type, {
-                text: c,
-            }),
-        );
-        return logs;
-    }
 }
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

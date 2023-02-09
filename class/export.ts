@@ -1,5 +1,4 @@
 import { join } from 'node:path';
-import { styleLog } from '@fangzhongya/utils/log/styleLog';
 
 import {
     FangCom,
@@ -42,6 +41,7 @@ export const defaultConfig: Config = Object.assign(
     {},
     defaultConfigCom,
     {
+        name: 'export',
         /**
          * 生成的文件名称
          */
@@ -80,7 +80,9 @@ export class FangExport extends FangCom {
         config?: Config,
         callback?: ConfigCallback,
     ) {
-        super(config, callback);
+        super();
+        this.config = {};
+        this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
     }
@@ -153,19 +155,10 @@ export class FangExport extends FangCom {
             this.fileOpen(join(url, gene), arr.join('\n'));
         }
     }
-    getLogs(type = 'export', c = 3) {
-        const logs = super.getLogs();
-        logs.push(
-            styleLog(type, {
-                text: c,
-            }),
-        );
-        return logs;
-    }
 }
 
 export function runDev(
-    config: Config = {},
+    config?: Config,
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {

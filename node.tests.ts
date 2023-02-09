@@ -1,3 +1,5 @@
 import { runDev } from '@fangzhongya/create/out/test';
 
-runDev({});
+runDev({
+    dir: './class/',
+});
