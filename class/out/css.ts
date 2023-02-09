@@ -45,7 +45,7 @@ const defaultConfig: Config = Object.assign(
         /**
          * 处理函数
          */
-        handle(n) {
+        handle(n: number) {
             //px 转 rpx
             return (
                 Math.ceil(
@@ -54,16 +54,17 @@ const defaultConfig: Config = Object.assign(
                 ) + 'rpx'
             );
         },
-    } as Config,
+    },
 );
 
-export class FangTest extends FangOut {
+export class FangCss extends FangOut {
     constructor(
         config?: Config,
         callback?: ConfigCallback,
     ) {
         super(config, callback);
-        this.setDefaultConfig(defaultConfig);
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
     }
     setCss(
         text: string,
@@ -97,8 +98,8 @@ export class FangTest extends FangOut {
             ...this.getFileNeader(name, url),
             this.setCss(
                 text,
-                this.config.unit || defaultConfig.unit,
-                this.config.handle || defaultConfig.handle,
+                this.config.unit,
+                this.config.handle,
             ),
         ];
     }
@@ -117,6 +118,6 @@ export function runDev(
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {
-    const fang = new FangOut(config);
+    const fang = new FangCss(config);
     fang.runDev(callback, configCallback);
 }

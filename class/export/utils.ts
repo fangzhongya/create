@@ -36,7 +36,7 @@ export const defaultConfig: Config = Object.assign(
 );
 
 export class FangUitle extends FangExport {
-    #initObj: {
+    _initObj: {
         [key: string]: Array<IssObj>;
     };
     constructor(
@@ -44,15 +44,17 @@ export class FangUitle extends FangExport {
         callback?: ConfigCallback,
     ) {
         super(config, callback);
-        this.#initObj = {};
-        this.setDefaultConfig(defaultConfig);
+        this._initObj = {};
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
     }
     initConfig(config?: Config): Config {
+        this._initObj = this._initObj || {};
         super.initConfig(config);
         const merge: Array<string> = this.config.merge;
         if (merge) {
             merge.forEach((key) => {
-                this.#initObj[key + 's'] =
+                this._initObj[key + 's'] =
                     [] as Array<IssObj>;
             });
         }
@@ -74,7 +76,7 @@ export class FangUitle extends FangExport {
                     const rex = reg.exec(wjmc);
                     if (rex && rex.length > 0) {
                         const sk = rex[1] + 's';
-                        this.#initObj[sk].push({
+                        this._initObj[sk].push({
                             name: wjmc,
                             url,
                         });
@@ -91,7 +93,7 @@ export class FangUitle extends FangExport {
         const merge: Array<string> = this.config.merge;
         const add: Array<string> = [];
         merge.forEach((key) => {
-            let arr = this.#initObj[key + 's'];
+            let arr = this._initObj[key + 's'];
             if (arr.length > 0) {
                 const dirUrl = this.getDirUrl();
                 const sts: Array<string> = [];

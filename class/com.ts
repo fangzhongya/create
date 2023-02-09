@@ -1,5 +1,4 @@
 import { styleLog } from '@fangzhongya/utils/log/styleLog';
-import { unmergeObject } from '@fangzhongya/utils/basic/object/unmergeObject';
 import { matchsEnd } from '@fangzhongya/utils/judge/matchsEnd';
 import { matchsStart } from '@fangzhongya/utils/judge/matchsStart';
 import { getUrlCatalogue } from '@fangzhongya/utils/urls/getUrlCatalogue';
@@ -152,32 +151,16 @@ export interface Fang {
  */
 export abstract class FangCom implements Fang {
     _configCallback: ConfigCallback | undefined;
+    _defaultConfig: Config;
     config: Config;
-    #defaultConfig: Config;
     constructor(
         config: Config = {},
         callback?: ConfigCallback,
     ) {
         this._configCallback = callback;
-        this.#defaultConfig = defaultConfig;
-        this.config = config;
-
-        this.setDefaultConfig(defaultConfig);
-    }
-    setDefaultConfig(config: Config) {
-        this.#defaultConfig = unmergeObject(
-            this.#defaultConfig,
-            config,
-            1,
-        );
-
-        this.config = unmergeObject(
-            this.#defaultConfig,
-            this.config,
-            1,
-        );
-
-        return this.initConfig(this.config);
+        this.config = {};
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
     }
     runDev(
         callback?: RurDevCallback,
@@ -189,7 +172,7 @@ export abstract class FangCom implements Fang {
         if (call) {
             const c = call(this.config);
             if (c) {
-                this.config = c;
+                this.initConfig(c);
             }
         }
         this.handle(callback);
@@ -201,16 +184,22 @@ export abstract class FangCom implements Fang {
      */
     initConfig(config?: Config) {
         if (config) {
-            this.config = unmergeObject(
-                this.config || {},
-                config,
-                1,
-            );
+            this.config = config;
+
+            this.setDefaultConfig();
+
             this.config.suffixReg = getSuffixReg(
                 this.config.extensions,
             );
         }
         return this.config;
+    }
+    setDefaultConfig() {
+        Object.keys(this._defaultConfig).forEach((key) => {
+            if (typeof this.config[key] == 'undefined') {
+                this.config[key] = this._defaultConfig[key];
+            }
+        });
     }
     getFileName(name: string) {
         if (this.config.suffixReg) {
@@ -225,10 +214,7 @@ export abstract class FangCom implements Fang {
      * @returns
      */
     getDirUrl(dir?: string) {
-        const str =
-            dir ||
-            this.config.dir ||
-            this.#defaultConfig.dir;
+        const str = dir || this.config.dir;
         if (str) {
             return resolve(process.cwd(), str);
         } else {
@@ -238,21 +224,13 @@ export abstract class FangCom implements Fang {
     isMatchFile(url: string, name: string) {
         const dirUrl = this.getDirUrl();
         const dir = join(url, name).replace(dirUrl, '');
-        return matchsEnd(
-            dir,
-            this.config.matchexts ||
-                this.#defaultConfig.matchexts,
-        );
+        return matchsEnd(dir, this.config.matchexts);
     }
 
     isMatchDir(url: string, name: string) {
         const dirUrl = this.getDirUrl();
         const dir = join(url, name).replace(dirUrl, '');
-        return matchsStart(
-            dir,
-            this.config.matchs ||
-                this.#defaultConfig.matchs,
-        );
+        return matchsStart(dir, this.config.matchs);
     }
     /**
      * 处理方法

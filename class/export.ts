@@ -81,12 +81,11 @@ export class FangExport extends FangCom {
         callback?: ConfigCallback,
     ) {
         super(config, callback);
-        this.setDefaultConfig(defaultConfig);
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
     }
     getGene(gene?: string) {
-        return (
-            gene || this.config.gene || defaultConfig.gene
-        );
+        return gene || this.config.gene;
     }
     /**
      * 回调方法
@@ -101,16 +100,13 @@ export class FangExport extends FangCom {
     ) {
         const gene = this.getGene();
         const arr: Array<string> = [];
-        const fileTop =
-            this.config.fileTop || defaultConfig.fileTop;
+        const fileTop = this.config.fileTop;
         if (fileTop) {
             arr.push(...fileTop(url, readdir));
         }
 
-        const fileDirs =
-            this.config.fileDirs || defaultConfig.fileDirs;
-        const fileFile =
-            this.config.fileFile || defaultConfig.fileFile;
+        const fileDirs = this.config.fileDirs;
+        const fileFile = this.config.fileFile;
 
         if (readdir.dirs) {
             readdir.dirs.forEach((name) => {
@@ -149,8 +145,7 @@ export class FangExport extends FangCom {
             });
         }
 
-        const fileEnd =
-            this.config.fileEnd || defaultConfig.fileEnd;
+        const fileEnd = this.config.fileEnd;
         if (fileEnd) {
             arr.push(...fileEnd(url, readdir, arr));
         }

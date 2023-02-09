@@ -30,7 +30,8 @@ export class FangPackageExport extends FangPackage {
         callback?: ConfigCallback,
     ) {
         super(config, callback);
-        this.setDefaultConfig(defaultConfig);
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
         this._Export = new FangExport(this.config);
     }
     runDev(

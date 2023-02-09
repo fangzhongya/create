@@ -21,7 +21,7 @@ const defaultConfig: Config = Object.assign(
          * 是否替换原来配置
          */
         fileCover: false,
-    } as Config,
+    },
 );
 
 export class FangTest extends FangOut {
@@ -30,7 +30,9 @@ export class FangTest extends FangOut {
         callback?: ConfigCallback,
     ) {
         super(config, callback);
-        this.setDefaultConfig(defaultConfig);
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
+        console.log('test', this.config);
     }
     /**
      * 获取输出地址方法
@@ -85,6 +87,6 @@ export function runDev(
     configCallback?: ConfigCallback,
     callback?: RurDevCallback,
 ) {
-    const fang = new FangOut(config);
+    const fang = new FangTest(config);
     fang.runDev(callback, configCallback);
 }

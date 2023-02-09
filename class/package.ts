@@ -108,14 +108,15 @@ export const defaultConfig: Config = Object.assign(
 );
 
 export class FangPackage extends FangCom {
-    #packageObj: ObjUnkn;
+    _packageObj: ObjUnkn;
     constructor(
         config?: Config,
         callback?: ConfigCallback,
     ) {
         super(config, callback);
-        this.#packageObj = {};
-        this.setDefaultConfig(defaultConfig);
+        this._packageObj = {};
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
     }
     /**
      * 获取package 配置对象
@@ -125,9 +126,9 @@ export class FangPackage extends FangCom {
         if (packageUrl) {
             const st = await fsReadFile(packageUrl);
             if (st) {
-                this.#packageObj = JSON.parse(st);
+                this._packageObj = JSON.parse(st);
             }
-            return this.#packageObj;
+            return this._packageObj;
         } else {
             return {};
         }
@@ -142,9 +143,9 @@ export class FangPackage extends FangCom {
         if (config && Object.keys(config).length > 0) {
             config = this.initConfig(config);
         } else {
-            config = this.config || defaultConfig;
+            config = this.config;
         }
-        packageObj = packageObj || this.#packageObj;
+        packageObj = packageObj || this._packageObj;
         const type = packageObj?.type;
         let tsup = config?.tsup || {};
         if (Object.keys(tsup).length == 0) {
@@ -173,7 +174,7 @@ export class FangPackage extends FangCom {
         if (call) {
             const c = call(this.config);
             if (c) {
-                this.config = c;
+                this.initConfig(c);
             }
         }
 
@@ -183,7 +184,7 @@ export class FangPackage extends FangCom {
 
         this.setExportsObj('', 'index', true);
 
-        this.setPackageJoon(this.#packageObj);
+        this.setPackageJoon(this._packageObj);
 
         if (this.config.check) {
             await this.checkDist();
@@ -227,13 +228,9 @@ export class FangPackage extends FangCom {
         return obj;
     }
     async checkDist(config: Config = {}) {
-        config = unmergeObject(
-            this.config || defaultConfig,
-            config,
-            1,
-        );
+        config = unmergeObject(this.config, config, 1);
         let packageObj =
-            this.#packageObj ||
+            this._packageObj ||
             (await this.getPackageObj(config.package));
 
         packageObj = await this.deleteNon(
@@ -260,8 +257,8 @@ export class FangPackage extends FangCom {
      * 设置package 配置
      */
     setPackageDefault() {
-        this.#packageObj.exports =
-            this.#packageObj.exports || {};
+        this._packageObj.exports =
+            this._packageObj.exports || {};
 
         const jb = this.config.cover ? 0 : 10;
 
@@ -273,17 +270,17 @@ export class FangPackage extends FangCom {
                     this.packageLog(
                         k,
                         key,
-                        this.#packageObj[k],
+                        this._packageObj[k],
                     );
-                    this.#packageObj[k] = key;
+                    this._packageObj[k] = key;
                 }
             }
         });
 
         const packageObj = this.config.packageObj || {};
         Object.keys(packageObj).forEach((key) => {
-            let tv = this.#packageObj[key] || {};
-            this.#packageObj[key] = mergeObject(
+            let tv = this._packageObj[key] || {};
+            this._packageObj[key] = mergeObject(
                 tv,
                 packageObj[key],
                 jb,
@@ -291,12 +288,12 @@ export class FangPackage extends FangCom {
             );
         });
 
-        const files = this.#packageObj.files || [];
+        const files = this._packageObj.files || [];
         mergeObject(files, [this.config.dist], 1, true);
-        this.#packageObj.files = files;
+        this._packageObj.files = files;
 
         const typesVersions =
-            this.#packageObj.typesVersions || {};
+            this._packageObj.typesVersions || {};
         mergeObject(
             typesVersions,
             {
@@ -307,14 +304,12 @@ export class FangPackage extends FangCom {
             2,
             true,
         );
-        this.#packageObj.typesVersions = typesVersions;
+        this._packageObj.typesVersions = typesVersions;
     }
     getPackageUrl(_dir?: string) {
         return join(
             process.cwd(),
-            _dir ||
-                this.config.package ||
-                defaultConfig.package,
+            _dir || this.config.package,
         );
     }
     /**
@@ -357,7 +352,7 @@ export class FangPackage extends FangCom {
             key += '/' + name;
         }
 
-        const obj = this.#packageObj.exports[key] || {};
+        const obj = this._packageObj.exports[key] || {};
 
         tsuparr.forEach((k, index) => {
             if (this.config.tsup) {
@@ -377,7 +372,7 @@ export class FangPackage extends FangCom {
                 }
             }
         });
-        this.#packageObj.exports[key] = obj;
+        this._packageObj.exports[key] = obj;
     }
     checkLog(keyok: string, value: unknown) {
         const logs = this.getLogs();

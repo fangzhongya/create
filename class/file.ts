@@ -1,6 +1,8 @@
-import { join } from 'node:path';
+import { resolve, join } from 'node:path';
 import { styleLog } from '@fangzhongya/utils/log/styleLog';
 import { getImportUrlSuffix } from '@fangzhongya/utils/urls/getImportUrlSuffix';
+import { getReplaceUrl } from '@fangzhongya/utils/urls/getReplaceUrl';
+import { getUrlCatalogueObj } from '@fangzhongya/utils/urls/getUrlCatalogueObj';
 
 import { fsReadFile } from './common';
 
@@ -68,7 +70,9 @@ export class FangFile extends FangCom {
         callback?: ConfigCallback,
     ) {
         super(config, callback);
-        this.setDefaultConfig(defaultConfig);
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
+        console.log('file', this.config);
     }
     getDefaultGene(
         name: string,
@@ -91,16 +95,25 @@ export class FangFile extends FangCom {
     ): string[] {
         return [];
     }
+    getGeneObj(url: string, name: string, outDir: string) {
+        return getUrlCatalogueObj(
+            getReplaceUrl(
+                join(url, name),
+                resolve(process.cwd(), outDir),
+            ),
+        );
+    }
     /**
      * 获取输出地址方法
      * @param gene
      * @returns
      */
     getGene(gene?: FileGene): FileGene {
-        gene =
-            gene || this.config.gene || defaultConfig.gene;
+        gene = gene || this.config.gene;
         if (!gene) {
-            return this.getDefaultGene;
+            return (...arr) => {
+                return this.getDefaultGene(...arr);
+            };
         } else {
             return gene;
         }
@@ -108,7 +121,9 @@ export class FangFile extends FangCom {
     getFileSet(fileSet?: FileDatas): FileDatas {
         fileSet = fileSet || this.config.fileSet;
         if (!fileSet) {
-            return this.getDefaultFileSet;
+            return (...arr) => {
+                return this.getDefaultFileSet(...arr);
+            };
         } else {
             return fileSet;
         }
@@ -120,9 +135,10 @@ export class FangFile extends FangCom {
      * @param urls
      */
     async writeCallback(url: string, readdir: FsReaddir) {
+        console.log('writeCallback', this.config);
         const gene = this.getGene();
         const fileSet = this.getFileSet();
-        let read = this.config.read || defaultConfig.read;
+        let read = this.config.read;
         if (readdir.file) {
             for (let i = 0; i < readdir.file.length; i++) {
                 const name = readdir.file[i];

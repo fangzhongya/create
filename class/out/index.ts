@@ -1,7 +1,5 @@
-import { resolve, join } from 'node:path';
+import { join } from 'node:path';
 import { styleLog } from '@fangzhongya/utils/log/styleLog';
-import { getReplaceUrl } from '@fangzhongya/utils/urls/getReplaceUrl';
-import { getUrlCatalogueObj } from '@fangzhongya/utils/urls/getUrlCatalogueObj';
 
 import {
     defaultConfig as defaultConfigFile,
@@ -25,7 +23,7 @@ export const defaultConfig: Config = Object.assign(
     defaultConfigFile,
     {
         outDir: './',
-    } as Config,
+    },
 );
 
 export class FangOut extends FangFile {
@@ -34,7 +32,9 @@ export class FangOut extends FangFile {
         callback?: ConfigCallback,
     ) {
         super(config, callback);
-        this.setDefaultConfig(defaultConfig);
+        this._defaultConfig = defaultConfig;
+        this.initConfig(config);
+        console.log('out', this.config);
     }
     getFileNeader(
         name: string,
@@ -46,14 +46,6 @@ export class FangOut extends FangFile {
             ` * ${new Date().toString()}`,
             ' */',
         ];
-    }
-    getGeneObj(url: string, name: string, outDir: string) {
-        return getUrlCatalogueObj(
-            getReplaceUrl(
-                join(url, name),
-                resolve(process.cwd(), outDir),
-            ),
-        );
     }
     /**
      * 获取输出地址方法
