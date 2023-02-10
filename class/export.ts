@@ -148,6 +148,7 @@ export class FangExport extends FangCom {
         }
 
         const fileEnd = this.config.fileEnd;
+
         if (fileEnd) {
             arr.push(...fileEnd(url, readdir, arr));
         }

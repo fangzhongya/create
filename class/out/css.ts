@@ -3,6 +3,7 @@ import {
     defaultConfig as defaultConfigOut,
 } from './index';
 import type { Config as ConfigOut } from './index';
+import { fetchUnitValue } from '@fangzhongya/utils/css/fetchUnitValue';
 import type {
     RurDevCallback,
     ConfigCallback,
@@ -68,23 +69,6 @@ export class FangCss extends FangOut {
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
     }
-    // function setCss(text, str = 'rem') {
-    //     text = text.replace(/\s/g, '  ');
-    //     const reg = new RegExp(
-    //         `\\s*(\\.|-|:|\\s|\\n|\\r|\\()([0-9\\.]+)(${str})(\\n|\\r|\\s|;|\\)|\\})`,
-    //         'g',
-    //     );
-    //     text = text.replace(reg, function (a, b, c,d) {
-    //         let th = c+d;
-    //         if(b == '.'){
-    //             c = '0.'+c;
-    //             th = b + th;
-    //         }
-    //         console.log('th', th);
-    //         return a.replace(th, "100rpx")
-    //     });
-    //     return text.replace(/\s\s/g, ' ');
-    // }
     setCss(
         text: string,
         str: string,
@@ -92,26 +76,10 @@ export class FangCss extends FangOut {
             n: number,
             dw: string,
             yss: string,
+            w: number,
         ) => string,
     ): string {
-        text = text.replace(/ /g, '  ');
-        const reg = new RegExp(
-            `\\s*(\\.|-|:|\\s|\\n|\\r|\\()([0-9\\.]+)(${str})(\\n|\\r|\\s|;|\\)|\\})`,
-            'g',
-        );
-        text = text.replace(reg, function (a, b, c, d) {
-            let th = c + d;
-            if (b == '.') {
-                th = b + th;
-            }
-            let thv = th;
-            const s = Number(c);
-            if (callback && !isNaN(s)) {
-                thv = callback(s, d, th);
-            }
-            return a.replace(th, thv);
-        });
-        return text.replace(/  /g, ' ');
+        return fetchUnitValue(text, str, callback);
     }
     getDefaultFileSet(
         //文件名称

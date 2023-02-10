@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.1-2",
+    "version": "0.2.1-4",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -25,7 +25,7 @@
     },
     "devDependencies": {
         "@fangzhongya/create": "link:dist",
-        "@fangzhongya/utils": "0.0.7-10",
+        "@fangzhongya/utils": "0.0.7-11",
         "@types/node": "^18.13.0",
         "tsup": "^6.6.0",
         "typescript": "^4.9.5",
@@ -49,25 +49,25 @@
             "import": "./dist/export/package.js",
             "types": "./dist/export/package.d.ts"
         },
-        "./export/vue": {
-            "require": "./dist/export/vue.cjs",
-            "import": "./dist/export/vue.js",
-            "types": "./dist/export/vue.d.ts"
-        },
         "./export/utils": {
             "require": "./dist/export/utils.cjs",
             "import": "./dist/export/utils.js",
             "types": "./dist/export/utils.d.ts"
         },
-        "./out/css": {
-            "require": "./dist/out/css.cjs",
-            "import": "./dist/out/css.js",
-            "types": "./dist/out/css.d.ts"
+        "./export/vue": {
+            "require": "./dist/export/vue.cjs",
+            "import": "./dist/export/vue.js",
+            "types": "./dist/export/vue.d.ts"
         },
         "./out/index": {
             "require": "./dist/out/index.cjs",
             "import": "./dist/out/index.js",
             "types": "./dist/out/index.d.ts"
+        },
+        "./out/css": {
+            "require": "./dist/out/css.cjs",
+            "import": "./dist/out/css.js",
+            "types": "./dist/out/css.d.ts"
         },
         "./out/test": {
             "require": "./dist/out/test.cjs",

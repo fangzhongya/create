@@ -65,11 +65,13 @@ export const defaultConfig: Config = Object.assign(
 );
 
 export class FangVue extends FangExport {
+    _indexUrls: string[];
     constructor(
         config?: Config,
         callback?: ConfigCallback,
     ) {
         super();
+        this._indexUrls = [];
         this.config = {};
         this._configCallback = callback;
         defaultConfig.fileEnd = (
@@ -98,10 +100,16 @@ export class FangVue extends FangExport {
             files.dirs.length > 0 &&
             files.dirs.includes('src')
         ) {
+            const zswj = join(url, this.config.gene);
             const iu = getImportUrlSuffix(
-                join(url, this.config.gene),
+                zswj,
                 join(this.getDirUrl(), this.config.utilurl),
             );
+            const ins = getImportUrlSuffix(
+                join(this.getDirUrl(), this.config.gene),
+                zswj,
+            );
+            this._indexUrls.push(`export * from '${ins}';`);
             const name = lineToLargeHump(
                 getUrlCatalogueLast(url),
             );
@@ -111,6 +119,8 @@ export class FangVue extends FangExport {
                 `export const ${name} = withInstall(SrcVue, '${name}');`,
                 `export default ${name};`,
             ];
+        } else if (url == this.getDirUrl()) {
+            return this._indexUrls;
         } else {
             return [];
         }
