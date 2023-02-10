@@ -140,7 +140,7 @@ export class FangCom {
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
     }
-    runDev(
+    async runDev(
         callback?: RurDevCallback,
         config?: Config,
         configCallback?: ConfigCallback,
@@ -153,7 +153,7 @@ export class FangCom {
                 this.initConfig(c);
             }
         }
-        this.handle(callback);
+        await this.handle(callback);
     }
     /**
      * 初始化
