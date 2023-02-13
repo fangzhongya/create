@@ -67,6 +67,7 @@ export class FangUitle extends FangExport {
         readdir: FsReaddir,
         fileUrls: string[],
     ) {
+        super.writeCallback(url, readdir, fileUrls);
         if (readdir.file.length) {
             const merge: Array<string> = this.config.merge;
             readdir.file.forEach((name: string) => {

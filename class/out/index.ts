@@ -44,7 +44,6 @@ export class FangOut extends FangFile {
         return [
             `/**`,
             ` * ${join(url, name).replace(/\\/g, '/')}`,
-            ` * ${new Date().toString()}`,
             ' */',
         ];
     }

@@ -3,7 +3,7 @@ import { matchsEnd } from '@fangzhongya/utils/judge/matchsEnd';
 import { matchsStart } from '@fangzhongya/utils/judge/matchsStart';
 import { getUrlCatalogue } from '@fangzhongya/utils/urls/getUrlCatalogue';
 import { resolve, join } from 'node:path';
-import { writeInit, fsMkdir, fsOpen } from './common';
+import { writeInit, fsMkdir, fsOpenStream } from './common';
 
 export type FsReaddir = {
     file: Array<string>;
@@ -44,6 +44,14 @@ export interface Config {
      * 是否覆盖已经存在的文件
      */
     fileCover?: boolean;
+    /**
+     * 读取当前文件配置来判断是否覆盖当前文件
+     */
+    coverConfig?: boolean;
+    /**
+     * 写入注释
+     */
+    writeNotes?: boolean;
     /**
      * 匹配目录数组
      * 从头开始匹配
@@ -90,6 +98,12 @@ export const defaultConfig: Config = {
      * 是否替换文件
      */
     fileCover: false,
+    coverConfig: false,
+
+    /**
+     * 写入注释
+     */
+    writeNotes: false,
     /**
      * 读取当前文件，文件的编码类型，默认utf-8
      */
@@ -259,7 +273,16 @@ export class FangCom {
         _file: FsReaddir,
         _urls: Array<string>,
     ) {}
-
+    getFileNotes(): Array<string> {
+        return [
+            `/**`,
+            ` * @config cover=false`,
+            ` * cover 是否覆盖当前文件，默认是false， true 表示不覆盖`,
+            ` * 当前已经由@fangzhongya/create自动生成`,
+            ` * ${new Date().toString()}`,
+            ' */',
+        ];
+    }
     /**
      * 输出文件，判断目录是否存在
      * @param url
@@ -327,48 +350,58 @@ export class FangCom {
         if (typeof type != 'undefined') {
             tn = type;
         }
-        fsOpen(url, str, tn, (kurl, type, is) => {
-            if (!(tn == 2 && type == 2)) {
-                const logs = this.getLogs();
-                logs.push(styleLog('file', {}));
-                if (type == 1) {
-                    logs.push(
-                        styleLog('add', {
-                            text: 2,
-                            italic: true,
-                        }),
-                    );
-                } else if (type == 2) {
-                    logs.push(
-                        styleLog('update', {
-                            italic: true,
-                            text: 4,
-                        }),
-                    );
-                }
-                if (is) {
-                    logs.push(
-                        styleLog(kurl, {
-                            text: 2,
-                            revert: true,
-                        }),
-                    );
-                } else {
-                    logs.push(
-                        styleLog(kurl, {
-                            text: 1,
-                            revert: true,
-                        }),
-                    );
+        if (this.config.writeNotes) {
+            str =
+                this.getFileNotes().join('\n') + '\n' + str;
+        }
+        fsOpenStream(
+            url,
+            str,
+            tn,
+            this.config.coverConfig,
+            (kurl, type, is) => {
+                if (!(tn == 2 && type == 2)) {
+                    const logs = this.getLogs();
+                    logs.push(styleLog('file', {}));
+                    if (type == 1) {
+                        logs.push(
+                            styleLog('add', {
+                                text: 2,
+                                italic: true,
+                            }),
+                        );
+                    } else if (type == 2) {
+                        logs.push(
+                            styleLog('update', {
+                                italic: true,
+                                text: 4,
+                            }),
+                        );
+                    }
+                    if (is) {
+                        logs.push(
+                            styleLog(kurl, {
+                                text: 2,
+                                revert: true,
+                            }),
+                        );
+                    } else {
+                        logs.push(
+                            styleLog(kurl, {
+                                text: 1,
+                                revert: true,
+                            }),
+                        );
+                    }
+
+                    console.log(logs.join(' '));
                 }
 
-                console.log(logs.join(' '));
-            }
-
-            if (callback) {
-                callback(kurl, type, is, tn);
-            }
-        });
+                if (callback) {
+                    callback(kurl, type, is, tn);
+                }
+            },
+        );
     }
     /**
      * 获取日志头

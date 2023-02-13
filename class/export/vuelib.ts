@@ -18,7 +18,7 @@ export interface Config extends ConfigExport {
     /**
      * 公共方法dir后的路径
      */
-    utilurl?: string;
+    utilurl?: string | ((a: string) => string);
 
     /**
      * 替换头的完整路径
@@ -96,7 +96,7 @@ export class FangVueLib extends FangExport {
         this._configCallback = callback;
         defaultConfig.liburl = resolve(
             process.cwd(),
-            'build.lib.json',
+            'build.lib.ts',
         );
         defaultConfig.fileEnd = (
             url: string,
@@ -127,16 +127,25 @@ export class FangVueLib extends FangExport {
             const mlz = getUrlCatalogueLast(url);
             const key = url
                 .replace(this.config.dittop, '')
+                .substring(1)
                 .replace(/[\\|\/]/g, this.config.branch);
             this._libObj[key] = join(
                 this.config.splicetop,
                 mlz,
             ).replace(/[\\|\/]/g, this.config.branch);
             const zswj = join(url, this.config.gene);
-            const iu = getImportUrlSuffix(
-                zswj,
-                join(this.getDirUrl(), this.config.utilurl),
-            );
+            let iu;
+            if (typeof this.config.utilurl == 'function') {
+                iu = this.config.utilurl(zswj);
+            } else {
+                iu = getImportUrlSuffix(
+                    zswj,
+                    join(
+                        this.getDirUrl(),
+                        this.config.utilurl,
+                    ),
+                );
+            }
             const ins = getImportUrlSuffix(
                 join(this.getDirUrl(), this.config.gene),
                 zswj,
@@ -146,8 +155,8 @@ export class FangVueLib extends FangExport {
             const name = lineToLargeHump(mlz);
             return [
                 `import { withInstall } from '${iu}'`,
-                `import SrcVueLib from './src/index.vue'`,
-                `export const ${name} = withInstall(SrcVueLib, '${name}');`,
+                `import SrcVue from './src/index.vue'`,
+                `export const ${name} = withInstall(SrcVue, '${name}');`,
                 `export default ${name};`,
             ];
         } else if (url == this.getDirUrl()) {
@@ -166,10 +175,10 @@ export class FangVueLib extends FangExport {
             config,
             configCallback,
         );
-        this.fileOpen(
-            this.config.liburl,
-            JSON.stringify(this._libObj, null, 4),
-        );
+        const arr = ['export const create = '];
+        arr.push(JSON.stringify(this._libObj, null, 4));
+        arr.push(';');
+        this.fileOpen(this.config.liburl, arr.join('\n'));
     }
 }
 export function runDev(

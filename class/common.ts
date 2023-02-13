@@ -6,6 +6,7 @@ import {
     write,
     mkdir,
     readFile,
+    createReadStream,
     access,
     constants,
 } from 'node:fs';
@@ -57,6 +58,32 @@ export function fsReadFile(
                 resolve(dataStr);
             },
         );
+    });
+}
+
+export function fsCreateReadStream(
+    url: string,
+    type?: string | boolean,
+): Promise<string> {
+    if (!type || type === true) {
+        type = 'utf-8';
+    }
+    return new Promise((resolve) => {
+        const stream = createReadStream(url, {
+            start: 0,
+            end: 100,
+            encoding: type as BufferEncoding,
+        });
+        let st = '';
+        stream.on('data', (data) => {
+            st += data;
+        });
+        stream.on('end', () => {
+            resolve(st);
+        });
+        stream.on('error', () => {
+            resolve('');
+        });
     });
 }
 
@@ -138,6 +165,106 @@ export function fsReaddir(
                 }
             }
         });
+    });
+}
+
+/**
+ * 异步地打开文件。详见 open(2)。 flags 可以是：
+ * 以写入模式打开文件。文件会被创建（如果文件不存在）或截断（如果文件存在）。
+ * @param {*} path
+ * @param {*} json
+ * @param {number} type
+ * 0 文件不存在，或者存在都写入数据
+ * 1 文件不存在 就不写入数据
+ * 2 文件不存在 才写入数据
+ * @param {*} callback
+ */
+export function fsOpenStream(
+    path: string,
+    json: string,
+    type: number = 0,
+    cover?: boolean,
+    callback?: FsOpenCallback,
+) {
+    // 检查文件是否存在于当前目录，且是否可写。
+    open(path, 'wx', async (err, fd) => {
+        if (err) {
+            if (err.code === 'EEXIST') {
+                if (type != 2) {
+                    const fwrite = () => {
+                        writeFile(
+                            path,
+                            json,
+                            'utf-8',
+                            (err) => {
+                                if (err) {
+                                    console.log('6', err);
+                                    if (callback)
+                                        callback(
+                                            path,
+                                            cover ? 3 : 2,
+                                            false,
+                                            type,
+                                        );
+                                } else {
+                                    if (callback)
+                                        callback(
+                                            path,
+                                            cover ? 3 : 2,
+                                            true,
+                                            type,
+                                        );
+                                }
+                            },
+                        );
+                    };
+                    if (cover) {
+                        const st = await fsCreateReadStream(
+                            path,
+                        );
+                        if (
+                            !st.includes(
+                                '@config cover=true',
+                            )
+                        ) {
+                            fwrite();
+                        } else {
+                            if (callback)
+                                callback(
+                                    path,
+                                    3,
+                                    false,
+                                    type,
+                                );
+                        }
+                    } else {
+                        fwrite();
+                    }
+                } else {
+                    if (callback)
+                        callback(path, 2, false, type);
+                }
+            } else {
+                if (callback)
+                    callback(path, 0, false, type);
+            }
+        } else {
+            if (type != 1) {
+                write(fd, json, (err) => {
+                    if (err) {
+                        console.log('8', err);
+                        if (callback)
+                            callback(path, 1, false, type);
+                    } else {
+                        if (callback)
+                            callback(path, 1, true, type);
+                    }
+                });
+            } else {
+                if (callback)
+                    callback(path, 1, false, type);
+            }
+        }
     });
 }
 
