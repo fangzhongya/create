@@ -46,6 +46,7 @@ export interface Config {
     fileCover?: boolean;
     /**
      * 读取当前文件配置来判断是否覆盖当前文件
+     * 判断当前文件100个字节内存在 @config cover=true 就不写入
      */
     coverConfig?: boolean;
     /**
@@ -98,6 +99,9 @@ export const defaultConfig: Config = {
      * 是否替换文件
      */
     fileCover: false,
+    /**
+     * 判断当前文件100个字节内存在 @config cover=true 就不写入
+     */
     coverConfig: false,
 
     /**
