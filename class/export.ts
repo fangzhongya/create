@@ -20,7 +20,7 @@ export type FileDatas = (
     // 目录名称，文件名称 ，text数组
     name?: string | string[],
     // 文件名
-    wjmc?: string,
+    wjmc?: string | string[],
 ) => string[];
 
 export interface Config extends ConfigCom {
@@ -69,6 +69,7 @@ export const defaultConfig: Config = Object.assign(
             _url: string,
             _files: FsReaddir,
             _name: Array<string>,
+            _fileUrls: Array<string>,
         ) {
             return [] as string[];
         },
@@ -150,10 +151,16 @@ export class FangExport extends FangCom {
         const fileEnd = this.config.fileEnd;
 
         if (fileEnd) {
-            arr.push(...fileEnd(url, readdir, arr));
+            arr.push(
+                ...fileEnd(url, readdir, arr, fileUrls),
+            );
         }
         if (arr.length > 0) {
-            this.fileOpen(join(url, gene), arr.join('\n'));
+            this.fileOpen(
+                join(url, gene),
+                arr.join('\n'),
+                fileUrls,
+            );
         }
     }
 }

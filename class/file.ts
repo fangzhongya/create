@@ -135,7 +135,11 @@ export class FangFile extends FangCom {
      * @param file
      * @param urls
      */
-    async writeCallback(url: string, readdir: FsReaddir) {
+    async writeCallback(
+        url: string,
+        readdir: FsReaddir,
+        fileUrls: string[],
+    ) {
         const gene = this.getGene();
         const fileSet = this.getFileSet();
         const read = this.config.read;
@@ -163,7 +167,11 @@ export class FangFile extends FangCom {
                     );
                 }
                 if (arr.length > 0) {
-                    this.fileOpen(gu, arr.join('\n'));
+                    this.fileOpen(
+                        gu,
+                        arr.join('\n'),
+                        fileUrls,
+                    );
                 }
             }
         }

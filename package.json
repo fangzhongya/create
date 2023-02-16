@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.2-1",
+    "version": "0.2.2-19",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -21,7 +21,9 @@
         "dev": "ts-node node.index.ts",
         "dev:tests": "ts-node node.tests.ts",
         "build": "tsup",
-        "test": "vitest test"
+        "test": "vitest test",
+        "pub": "pnpm publish --access public --no-git-checks",
+        "all": "pnpm build & pnpm dev & pnpm pub"
     },
     "devDependencies": {
         "@fangzhongya/create": "link:dist",
@@ -31,23 +33,17 @@
         "typescript": "^4.9.5",
         "vitest": "^0.28.4"
     },
-    "typesVersions": {
-        "*": {
-            "*": [
-                "./dist/*"
-            ]
-        }
-    },
-    "files": [
-        "*.d.ts",
-        "dist"
-    ],
     "exports": {
         "./*": "./*",
         "./export/package": {
             "require": "./dist/export/package.cjs",
             "import": "./dist/export/package.js",
             "types": "./dist/export/package.d.ts"
+        },
+        "./export/theme": {
+            "require": "./dist/export/theme.cjs",
+            "import": "./dist/export/theme.js",
+            "types": "./dist/export/theme.d.ts"
         },
         "./export/utils": {
             "require": "./dist/export/utils.cjs",
@@ -64,6 +60,11 @@
             "import": "./dist/export/vuelib.js",
             "types": "./dist/export/vuelib.d.ts"
         },
+        "./out/test": {
+            "require": "./dist/out/test.cjs",
+            "import": "./dist/out/test.js",
+            "types": "./dist/out/test.d.ts"
+        },
         "./out/css": {
             "require": "./dist/out/css.cjs",
             "import": "./dist/out/css.js",
@@ -74,10 +75,15 @@
             "import": "./dist/out/index.js",
             "types": "./dist/out/index.d.ts"
         },
-        "./out/test": {
-            "require": "./dist/out/test.cjs",
-            "import": "./dist/out/test.js",
-            "types": "./dist/out/test.d.ts"
+        "./out/theme": {
+            "require": "./dist/out/theme.cjs",
+            "import": "./dist/out/theme.js",
+            "types": "./dist/out/theme.d.ts"
+        },
+        "./export": {
+            "require": "./dist/export.cjs",
+            "import": "./dist/export.js",
+            "types": "./dist/export.d.ts"
         },
         "./file": {
             "require": "./dist/file.cjs",
@@ -94,11 +100,6 @@
             "import": "./dist/package.js",
             "types": "./dist/package.d.ts"
         },
-        "./export": {
-            "require": "./dist/export.cjs",
-            "import": "./dist/export.js",
-            "types": "./dist/export.d.ts"
-        },
         ".": {
             "require": "./dist/index.cjs",
             "import": "./dist/index.js",
@@ -107,5 +108,15 @@
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
-    "types": "./dist/index.d.ts"
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "typesVersions": {
+        "*": {
+            "*": [
+                "./dist/*"
+            ]
+        }
+    }
 }

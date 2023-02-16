@@ -5,10 +5,15 @@ runDev({
     cover: true,
     // matchexts: [/(?<![\\|\/]common\.ts)$/],
     nomatchexts: ['\\common.ts', '\\com.ts'],
+    exportsIndex: true,
     packageObj: {
-        files: ['*.d.ts'],
         exports: {
             './*': './*',
+        },
+        typesVersions: {
+            '*': {
+                '*': ['./dist/*'],
+            },
         },
     },
 });

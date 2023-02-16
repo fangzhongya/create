@@ -68,6 +68,10 @@ export interface Config extends ConfigCom {
         types?: string;
     };
     /**
+     * 是否生成index后缀
+     */
+    exportsIndex?: boolean;
+    /**
      * 版本配置
      */
     packageObj?: {
@@ -101,6 +105,7 @@ export const defaultConfig: Config = Object.assign(
          * '' 表示匹配当前文件名
          */
         tsup: {},
+        exportsIndex: false,
         /**
          * 版本配置
          */
@@ -294,20 +299,6 @@ export class FangPackage extends FangCom {
         const files = this._packageObj.files || [];
         mergeObject(files, [this.config.dist], 1, true);
         this._packageObj.files = files;
-
-        const typesVersions =
-            this._packageObj.typesVersions || {};
-        mergeObject(
-            typesVersions,
-            {
-                '*': {
-                    '*': [`./${this.config.dist}/*`],
-                },
-            },
-            2,
-            true,
-        );
-        this._packageObj.typesVersions = typesVersions;
     }
     getPackageUrl(_dir?: string) {
         return join(
@@ -351,8 +342,14 @@ export class FangPackage extends FangCom {
             .replace(this.getDirUrl(), '')
             .replace(/\\/g, '/');
         let key: string = '.' + ust;
-        if (!isk) {
-            key += '/' + name;
+        if (this.config.exportsIndex) {
+            if (!isk) {
+                key += '/' + name;
+            }
+        } else {
+            if (name != 'index') {
+                key += '/' + name;
+            }
         }
 
         const obj = this._packageObj.exports[key] || {};
