@@ -4,6 +4,7 @@ runDev({
     dir: './dist/',
     dist: 'dist',
     cover: true,
+    upversion: true,
     extensions: ['js'],
     nomatchexts: [
         /\\chunk-([a-z|A-Z|0-9|-]+)\.js$/,
