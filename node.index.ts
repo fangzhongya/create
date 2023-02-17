@@ -1,10 +1,15 @@
 import { runDev } from '@fangzhongya/create/package';
 
 runDev({
-    dir: './class/',
+    dir: './dist/',
+    dist: 'dist',
     cover: true,
-    // matchexts: [/(?<![\\|\/]common\.ts)$/],
-    nomatchexts: ['\\common.ts', '\\com.ts'],
+    extensions: ['js'],
+    nomatchexts: [
+        /\\chunk-([a-z|A-Z|0-9|-]+)\.js$/,
+        '\\common.js',
+        '\\com.js',
+    ],
     exportsIndex: true,
     packageObj: {
         exports: {

@@ -82,7 +82,7 @@ export type ConfigCallback = (
     config: Config,
 ) => Config | void;
 
-const defaultSuffixReg = /\\.[a-zA-Z]+$/;
+const defaultSuffixReg = /\\.[a-z|A-Z]+$/;
 
 export const defaultConfig: Config = {
     name: 'com',
@@ -186,6 +186,10 @@ export class FangCom {
 
             this.config.suffixReg = getSuffixReg(
                 this.config.extensions,
+            );
+
+            this.config.matchexts?.push(
+                this.config.suffixReg,
             );
         }
         return this.config;

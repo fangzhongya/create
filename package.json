@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.2-19",
+    "version": "0.2.2-21",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -60,11 +60,6 @@
             "import": "./dist/export/vuelib.js",
             "types": "./dist/export/vuelib.d.ts"
         },
-        "./out/test": {
-            "require": "./dist/out/test.cjs",
-            "import": "./dist/out/test.js",
-            "types": "./dist/out/test.d.ts"
-        },
         "./out/css": {
             "require": "./dist/out/css.cjs",
             "import": "./dist/out/css.js",
@@ -74,6 +69,11 @@
             "require": "./dist/out/index.cjs",
             "import": "./dist/out/index.js",
             "types": "./dist/out/index.d.ts"
+        },
+        "./out/test": {
+            "require": "./dist/out/test.cjs",
+            "import": "./dist/out/test.js",
+            "types": "./dist/out/test.d.ts"
         },
         "./out/theme": {
             "require": "./dist/out/theme.cjs",

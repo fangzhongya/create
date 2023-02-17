@@ -84,6 +84,7 @@ export class FangTheme extends FangOut {
         return [
             ...this.getFileNeader(name, url),
             `.${wjm} {`,
+            '   ',
             `}`,
         ];
     }

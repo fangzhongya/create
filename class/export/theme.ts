@@ -108,12 +108,12 @@ export class FangTheme extends FangExport {
                 join(this.getDirUrl(), this.config.gene),
                 zswj,
             );
-            this._indexUrls.push(`@import url("${ins}");`);
+            this._indexUrls.push(`@use "${ins}" as *;`);
             const urs: string[] = [];
             for (const kurl of fileUrls) {
                 if (kurl.startsWith(url)) {
                     const inv = getImportUrl(zswj, kurl);
-                    urs.push(`@import url("${inv}");`);
+                    urs.push(`@use "${inv}" as *;`);
                 }
             }
             return urs;
