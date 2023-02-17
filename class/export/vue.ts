@@ -93,9 +93,6 @@ export class FangVue extends FangExport {
         files: FsReaddir,
         arr: Array<string>,
     ) {
-        if (arr instanceof Array) {
-            arr.splice(0, arr.length);
-        }
         if (
             files.dirs.length > 0 &&
             files.dirs.includes('src')
@@ -122,6 +119,9 @@ export class FangVue extends FangExport {
         } else if (url == this.getDirUrl()) {
             return this._indexUrls;
         } else {
+            if (arr instanceof Array) {
+                arr.splice(0, arr.length);
+            }
             return [];
         }
     }

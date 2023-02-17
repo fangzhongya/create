@@ -11,6 +11,10 @@ import type {
 
 export interface Config extends ConfigOut {
     suffix?: string;
+    alias?: string;
+    filter?: {
+        [key: string]: string;
+    };
 }
 
 const defaultConfig: Config = Object.assign(
@@ -32,15 +36,39 @@ const defaultConfig: Config = Object.assign(
 const regmc = /[\\|\/]([^\\|\/]+)[\\|\/]src$/;
 
 export class FangTheme extends FangOut {
+    _filters: string[];
     constructor(
         config?: Config,
         callback?: ConfigCallback,
     ) {
         super();
         this.config = {};
+        this._filters = [];
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
         this.initConfig(config);
+        this._filters = Object.keys(this.config.filter);
+    }
+
+    getfilterUrl(url: string) {
+        url = url
+            .replace(this.getDirUrl(), '')
+            .replace(/[\\|\/]/g, '/')
+            .substring(1);
+        for (
+            let index = 0;
+            index < this._filters.length;
+            index++
+        ) {
+            const element = this._filters[index];
+            if (url.startsWith(element)) {
+                return url.replace(
+                    element,
+                    this.config.filter[element],
+                );
+            }
+        }
+        return url;
     }
     /**
      * 获取输出地址方法
@@ -48,11 +76,18 @@ export class FangTheme extends FangOut {
      * @returns
      */
     getDefaultGene(name: string, url: string) {
+        if (this.config.filter) {
+            url = join(
+                this.getDirUrl(),
+                this.getfilterUrl(url),
+            );
+        }
         const obj = this.getGeneObj(
             url,
             name,
             this.config.outDir + '',
         );
+
         return join(
             obj.catalogue,
             obj.name + '.' + this.config.suffix,
@@ -80,6 +115,9 @@ export class FangTheme extends FangOut {
             }
         } else {
             wjm = wjm?.replace(/\.vue$/, '');
+        }
+        if (this.config.alias) {
+            wjm = this.config.alias + '-' + wjm;
         }
         return [
             ...this.getFileNeader(name, url),

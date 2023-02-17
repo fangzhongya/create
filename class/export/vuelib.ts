@@ -28,6 +28,8 @@ export interface Config extends ConfigExport {
      * 拼接头
      */
     splicetop?: string;
+
+    libExport?: string;
     /**
      * 文件地址
      */
@@ -52,6 +54,7 @@ export const defaultConfig: Config = Object.assign(
         gene: 'index.ts',
         matchexts: [/[\\|\/]src[\\|\/]index\.vue$/],
         branch: '/',
+        libExport: 'filter',
         fileTop(_url: string, _files: FsReaddir) {
             return [] as string[];
         },
@@ -117,9 +120,6 @@ export class FangVueLib extends FangExport {
         files: FsReaddir,
         arr: Array<string>,
     ) {
-        if (arr instanceof Array) {
-            arr.splice(0, arr.length);
-        }
         if (
             files.dirs.length > 0 &&
             files.dirs.includes('src')
@@ -162,6 +162,9 @@ export class FangVueLib extends FangExport {
         } else if (url == this.getDirUrl()) {
             return this._indexUrls;
         } else {
+            if (arr instanceof Array) {
+                arr.splice(0, arr.length);
+            }
             return [];
         }
     }
@@ -175,9 +178,14 @@ export class FangVueLib extends FangExport {
             config,
             configCallback,
         );
-        const arr = ['export const create = '];
+        const arr = [];
+        if (/\.json$/.test(this.config.liburl)) {
+        } else {
+            arr.push(
+                `export const ${this.config.libExport} = `,
+            );
+        }
         arr.push(JSON.stringify(this._libObj, null, 4));
-        arr.push(';');
         this.fileOpen(this.config.liburl, arr.join('\n'));
     }
 }

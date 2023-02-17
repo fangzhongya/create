@@ -187,10 +187,14 @@ export class FangCom {
             this.config.suffixReg = getSuffixReg(
                 this.config.extensions,
             );
-
-            this.config.matchexts?.push(
-                this.config.suffixReg,
-            );
+            if (
+                !this.config.matchexts ||
+                this.config.matchexts.length == 0
+            ) {
+                this.config.matchexts = [
+                    this.config.suffixReg,
+                ];
+            }
         }
         return this.config;
     }
@@ -358,7 +362,10 @@ export class FangCom {
         if (typeof type != 'undefined') {
             tn = type;
         }
-        if (this.config.writeNotes) {
+        if (
+            this.config.writeNotes &&
+            !/\.json$/.test(url)
+        ) {
             str =
                 this.getFileNotes().join('\n') + '\n' + str;
         }
