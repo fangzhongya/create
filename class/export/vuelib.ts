@@ -113,7 +113,7 @@ export class FangVueLib extends FangExport {
             );
         };
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     setFileEnd(
         url: string,

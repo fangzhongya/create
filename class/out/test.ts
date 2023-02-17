@@ -33,7 +33,7 @@ export class FangTest extends FangOut {
         this.config = {};
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     /**
      * 获取输出地址方法

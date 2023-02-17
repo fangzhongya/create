@@ -73,7 +73,7 @@ export class FangFile extends FangCom {
         this.config = {};
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     getDefaultGene(
         name: string,

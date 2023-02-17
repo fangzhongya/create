@@ -85,7 +85,7 @@ export class FangExport extends FangCom {
         this.config = {};
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     getGene(gene?: string) {
         return gene || this.config.gene;

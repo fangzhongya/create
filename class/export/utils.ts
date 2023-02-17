@@ -48,7 +48,7 @@ export class FangUitle extends FangExport {
         this.config = {};
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     initConfig(config?: Config): Config {
         this._initObj = this._initObj || {};

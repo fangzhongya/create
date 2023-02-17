@@ -1,4 +1,4 @@
-import { resolve, join } from 'node:path';
+import { resolve } from 'node:path';
 import { styleLog } from '@fangzhongya/utils/log/styleLog';
 import { mergeObject } from '@fangzhongya/utils/basic/object/mergeObject';
 import { fsReadFile, fsAccess } from './common';
@@ -129,7 +129,7 @@ export class FangPackage extends FangCom {
         this.config = {};
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     /**
      * 获取package 配置对象
@@ -334,7 +334,7 @@ export class FangPackage extends FangCom {
         this._packageObj.files = files;
     }
     getPackageUrl(_dir?: string) {
-        return join(
+        return resolve(
             process.cwd(),
             _dir || this.config.package,
         );

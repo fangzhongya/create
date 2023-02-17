@@ -91,7 +91,7 @@ export class FangTheme extends FangExport {
             );
         };
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     getfileTop(url: string, arr: string[] = []) {
         const rarr: string[] = [];

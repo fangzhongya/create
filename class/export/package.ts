@@ -36,7 +36,7 @@ export class FangExportPackageExport extends FangPackageExport {
         this.config = {};
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
         this._Uitle = new FangUitle(this.config);
     }
     runDev(

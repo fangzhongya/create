@@ -35,7 +35,7 @@ export class FangOut extends FangFile {
         this.config = {};
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     getFileNeader(
         name: string,

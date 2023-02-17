@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.2-32",
+    "version": "0.2.2-35",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -94,6 +94,11 @@
             "require": "./dist/package-export.cjs",
             "import": "./dist/package-export.js",
             "types": "./dist/package-export.d.ts"
+        },
+        "./package-version": {
+            "require": "./dist/package-version.cjs",
+            "import": "./dist/package-version.js",
+            "types": "./dist/package-version.d.ts"
         },
         "./package": {
             "require": "./dist/package.cjs",

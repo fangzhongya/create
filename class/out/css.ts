@@ -67,7 +67,7 @@ export class FangCss extends FangOut {
         this.config = {};
         this._configCallback = callback;
         this._defaultConfig = defaultConfig;
-        this.initConfig(config);
+        this.initConfig(config || this.config);
     }
     setCss(
         text: string,
