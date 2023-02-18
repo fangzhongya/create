@@ -6,6 +6,7 @@ import {
     defaultConfig as defaultConfigExport,
     FangExport,
 } from '../export';
+import { fsAccess } from '../common';
 
 import type { Config as ConfigExport } from '../export';
 import type {
@@ -19,7 +20,7 @@ export interface Config extends ConfigExport {
      * 公共方法dir后的路径
      */
     utilurl?: string | ((a: string) => string);
-
+    alias?: string;
     /**
      * 替换头的完整路径
      */
@@ -49,10 +50,11 @@ export const defaultConfig: Config = Object.assign(
          * 合并文件头
          */
         utilurl: 'util.ts',
+        alias: '',
         dir: './src/components/',
-        extensions: ['vue'],
+        extensions: ['vue', 'ts'],
         gene: 'index.ts',
-        matchexts: [/[\\|\/]src[\\|\/]index\.vue$/],
+        matchexts: [/[\\|\/]src[\\|\/]index\.[vue|ts]$/],
         branch: '/',
         libExport: 'filter',
         fileTop(_url: string, _files: FsReaddir) {
@@ -101,12 +103,12 @@ export class FangVueLib extends FangExport {
             process.cwd(),
             'build.lib.ts',
         );
-        defaultConfig.fileEnd = (
+        defaultConfig.fileEnd = async (
             url: string,
             files: FsReaddir,
             arr?: Array<string> | string,
         ) => {
-            return this.setFileEnd(
+            return await this.setFileEnd(
                 url,
                 files,
                 arr as string[],
@@ -115,7 +117,7 @@ export class FangVueLib extends FangExport {
         this._defaultConfig = defaultConfig;
         this.initConfig(config || this.config);
     }
-    setFileEnd(
+    async setFileEnd(
         url: string,
         files: FsReaddir,
         arr: Array<string>,
@@ -151,14 +153,40 @@ export class FangVueLib extends FangExport {
                 zswj,
             );
             this._indexUrls.push(`export * from '${ins}';`);
+            let alias = '';
+            if (this.config.alias) {
+                alias = this.config.alias + '-';
+            }
+            const name = lineToLargeHump(alias + mlz);
 
-            const name = lineToLargeHump(mlz);
-            return [
+            const rarr = [
                 `import { withInstall } from '${iu}'`,
-                `import SrcVue from './src/index.vue'`,
+            ];
+            const isv = await fsAccess(
+                resolve(url, './src/index.vue'),
+            );
+            if (isv) {
+                rarr.push(
+                    `import SrcVue from './src/index.vue'`,
+                );
+            } else {
+                rarr.push(
+                    `import SrcVue from './src/index'`,
+                );
+            }
+            rarr.push(
                 `export const ${name} = withInstall(SrcVue, '${name}');`,
                 `export default ${name};`,
-            ];
+            );
+            const isd = await fsAccess(
+                resolve(url, './src/data.ts'),
+            );
+            if (isd) {
+                rarr.push(
+                    `export * as ${name}Data from './src/data';`,
+                );
+            }
+            return rarr;
         } else if (url == this.getDirUrl()) {
             return this._indexUrls;
         } else {

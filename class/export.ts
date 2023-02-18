@@ -21,7 +21,7 @@ export type FileDatas = (
     name?: string | string[],
     // 文件名
     wjmc?: string | string[],
-) => string[];
+) => string[] | Promise<string[]>;
 
 export interface Config extends ConfigCom {
     /**
@@ -152,7 +152,12 @@ export class FangExport extends FangCom {
 
         if (fileEnd) {
             arr.push(
-                ...fileEnd(url, readdir, arr, fileUrls),
+                ...(await fileEnd(
+                    url,
+                    readdir,
+                    arr,
+                    fileUrls,
+                )),
             );
         }
         if (arr.length > 0) {

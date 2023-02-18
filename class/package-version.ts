@@ -69,6 +69,7 @@ export class FangPackageVersion extends FangCom {
             return {};
         }
     }
+    writeCallback() {}
 
     upVersion() {
         if (this.config.upversion) {

@@ -145,10 +145,10 @@ export function getSuffixReg(ex: Array<string> = []) {
 /**
  * 不清楚怎么定义抽象方法
  */
-export class FangCom {
-    _configCallback?: ConfigCallback;
-    _defaultConfig: Config;
-    config: Config;
+export abstract class FangCom {
+    protected _configCallback?: ConfigCallback;
+    protected _defaultConfig: Config;
+    protected config: Config;
     constructor(
         config?: Config,
         callback?: ConfigCallback,
@@ -225,7 +225,7 @@ export class FangCom {
             return '';
         }
     }
-    isMatchFile(url: string, name: string) {
+    protected isMatchFile(url: string, name: string) {
         const dirUrl = this.getDirUrl();
         const dir = join(url, name).replace(dirUrl, '');
         const is = matchsEnd(dir, this.config.matchexts);
@@ -241,7 +241,7 @@ export class FangCom {
         }
     }
 
-    isMatchDir(url: string, name: string) {
+    protected isMatchDir(url: string, name: string) {
         const dirUrl = this.getDirUrl();
         const dir = join(url, name).replace(dirUrl, '');
         const is = matchsStart(dir, this.config.matchs);
@@ -280,11 +280,11 @@ export class FangCom {
             );
         }
     }
-    writeCallback(
+    protected abstract writeCallback(
         _url: string,
         _file: FsReaddir,
         _urls: Array<string>,
-    ) {}
+    ): void;
     getFileNotes(): Array<string> {
         return [
             `/**`,
@@ -421,7 +421,7 @@ export class FangCom {
     /**
      * 获取日志头
      */
-    getLogs() {
+    protected getLogs() {
         const logs = [];
         logs.push(
             styleLog('[@fangzhongya/create]', {

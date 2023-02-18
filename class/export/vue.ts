@@ -20,6 +20,7 @@ export interface Config extends ConfigExport {
      * 合并文件头
      */
     utilurl?: string;
+    alias?: string;
 }
 
 export const defaultConfig: Config = Object.assign(
@@ -30,6 +31,7 @@ export const defaultConfig: Config = Object.assign(
         /**
          * 合并文件头
          */
+        alias: '',
         utilurl: 'util.ts',
         dir: './src/components/',
         extensions: ['vue'],
@@ -107,8 +109,12 @@ export class FangVue extends FangExport {
                 zswj,
             );
             this._indexUrls.push(`export * from '${ins}';`);
+            let alias = '';
+            if (this.config.alias) {
+                alias = this.config.alias + '-';
+            }
             const name = lineToLargeHump(
-                getUrlCatalogueLast(url),
+                alias + getUrlCatalogueLast(url),
             );
             return [
                 `import { withInstall } from '${iu}'`,
