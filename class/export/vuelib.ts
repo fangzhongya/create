@@ -178,14 +178,14 @@ export class FangVueLib extends FangExport {
                 `export const ${name} = withInstall(SrcVue, '${name}');`,
                 `export default ${name};`,
             );
-            const isd = await fsAccess(
-                resolve(url, './src/data.ts'),
-            );
-            if (isd) {
-                rarr.push(
-                    `export * as ${name}Data from './src/data';`,
-                );
-            }
+            // const isd = await fsAccess(
+            //     resolve(url, './src/data.ts'),
+            // );
+            // if (isd) {
+            //     rarr.push(
+            //         `export * as ${name}Data from './src/data';`,
+            //     );
+            // }
             return rarr;
         } else if (url == this.getDirUrl()) {
             return this._indexUrls;
