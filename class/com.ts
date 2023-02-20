@@ -65,6 +65,10 @@ export interface Config {
     matchexts?: Array<string | RegExp>;
 
     /**
+     * 进行强制更新的文件
+     */
+    forceUpdate?: Array<string | RegExp>;
+    /**
      * 不匹配目录数组
      * 从头开始匹配
      */
@@ -122,7 +126,7 @@ export const defaultConfig: Config = {
      * 从尾部开始匹配
      */
     matchexts: [],
-
+    forceUpdate: [],
     /**
      * 不匹配目录数组
      * 从头开始匹配
@@ -223,6 +227,16 @@ export abstract class FangCom {
             return resolve(process.cwd(), str);
         } else {
             return '';
+        }
+    }
+    protected isForceUpdate(url: string) {
+        if (
+            this.config.forceUpdate &&
+            this.config.forceUpdate.length > 0
+        ) {
+            return matchsEnd(url, this.config.forceUpdate);
+        } else {
+            return false;
         }
     }
     protected isMatchFile(url: string, name: string) {
@@ -359,6 +373,11 @@ export abstract class FangCom {
         callback?: FsOpenCallback,
     ) {
         let tn = this.config.fileCover ? 0 : 2;
+        if (tn == 2) {
+            if (this.isForceUpdate(url)) {
+                tn = 0;
+            }
+        }
         if (typeof type != 'undefined') {
             tn = type;
         }

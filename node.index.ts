@@ -8,7 +8,6 @@ runDev({
     extensions: ['js'],
     nomatchexts: [
         /\\chunk-([a-z|A-Z|0-9|-]+)\.js$/,
-        '\\common.js',
         '\\com.js',
     ],
     exportsIndex: true,

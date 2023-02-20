@@ -214,7 +214,12 @@ export class FangVueLib extends FangExport {
             );
         }
         arr.push(JSON.stringify(this._libObj, null, 4));
-        this.fileOpen(this.config.liburl, arr.join('\n'));
+        this.fileOpen(
+            this.config.liburl,
+            arr.join('\n'),
+            [],
+            0,
+        );
     }
 }
 export function runDev(
