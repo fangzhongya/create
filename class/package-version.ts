@@ -116,6 +116,8 @@ export class FangPackageVersion extends FangCom {
         this.upVersion();
 
         this.setPackageJoon(this._packageObj);
+
+        return undefined;
     }
 
     getPackageUrl(_dir?: string) {

@@ -230,6 +230,8 @@ export class FangPackage extends FangCom {
         if (this.config.check) {
             await this.checkDist();
         }
+
+        return undefined;
     }
     async deleteNon(
         obj: { [key: string]: any },

@@ -150,7 +150,8 @@ export class FangTheme extends FangOut {
         );
         urs.push(
             `$${wjm}: '${wjm}';`,
-            `.#{$namespace + $${wjm}} {`,
+            `$${wjm}s: $namespace + $${wjm};`,
+            `.#{$${wjm}s} {`,
             '   ',
             `}`,
         );

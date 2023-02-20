@@ -198,13 +198,13 @@ export class FangVueLib extends FangExport {
     }
     async runDev(
         callback?: RurDevCallback | undefined,
-        config?: Config | undefined,
         configCallback?: ConfigCallback | undefined,
+        config?: Config | undefined,
     ) {
-        await super.runDev(
+        const rarr = await super.runDev(
             callback,
-            config,
             configCallback,
+            config,
         );
         const arr = [];
         if (/\.json$/.test(this.config.liburl)) {
@@ -220,6 +220,7 @@ export class FangVueLib extends FangExport {
             [],
             0,
         );
+        return rarr;
     }
 }
 export function runDev(

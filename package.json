@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.2-53",
+    "version": "0.2.3-4",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -70,20 +70,25 @@
             "import": "./dist/out/css.js",
             "types": "./dist/out/css.d.ts"
         },
-        "./out/test": {
-            "require": "./dist/out/test.cjs",
-            "import": "./dist/out/test.js",
-            "types": "./dist/out/test.d.ts"
-        },
         "./out/index": {
             "require": "./dist/out/index.cjs",
             "import": "./dist/out/index.js",
             "types": "./dist/out/index.d.ts"
         },
+        "./out/svgvue": {
+            "require": "./dist/out/svgvue.cjs",
+            "import": "./dist/out/svgvue.js",
+            "types": "./dist/out/svgvue.d.ts"
+        },
         "./out/theme": {
             "require": "./dist/out/theme.cjs",
             "import": "./dist/out/theme.js",
             "types": "./dist/out/theme.d.ts"
+        },
+        "./out/test": {
+            "require": "./dist/out/test.cjs",
+            "import": "./dist/out/test.js",
+            "types": "./dist/out/test.d.ts"
         },
         "./common": {
             "require": "./dist/common.cjs",

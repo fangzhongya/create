@@ -164,8 +164,8 @@ export abstract class FangCom {
     }
     async runDev(
         callback?: RurDevCallback,
-        config?: Config,
         configCallback?: ConfigCallback,
+        config?: Config,
     ) {
         this.initConfig(config);
         const call = configCallback || this._configCallback;
@@ -175,7 +175,7 @@ export abstract class FangCom {
                 this.initConfig(c);
             }
         }
-        await this.handle(callback);
+        return await this.handle(callback);
     }
     /**
      * 初始化
@@ -277,9 +277,9 @@ export abstract class FangCom {
     async handle(callback?: RurDevCallback) {
         const url = this.getDirUrl();
         if (url) {
-            await writeInit(
+            return await writeInit(
                 url,
-                (...arr) => {
+                async (...arr) => {
                     if (callback) {
                         callback(...arr);
                     }
