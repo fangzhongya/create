@@ -3,6 +3,8 @@ import {
     FangOut,
     defaultConfig as defaultConfigOut,
 } from './index';
+
+import { getImportUrl } from '@fangzhongya/utils/urls/getImportUrl';
 import type { Config as ConfigOut } from './index';
 import type {
     RurDevCallback,
@@ -15,6 +17,7 @@ export interface Config extends ConfigOut {
     filter?: {
         [key: string]: string;
     };
+    topUrl?: string[];
 }
 
 const defaultConfig: Config = Object.assign(
@@ -23,6 +26,8 @@ const defaultConfig: Config = Object.assign(
     {
         name: 'theme',
         outDir: './theme/',
+
+        topUrl: [],
 
         suffix: 'scss',
         matchexts: [/[\\|\/]src[\\|\/]([^\\|\/]+)\.vue$/],
@@ -93,6 +98,19 @@ export class FangTheme extends FangOut {
             obj.name + '.' + this.config.suffix,
         );
     }
+    getfileTop(url: string, arr: string[] = []) {
+        const rarr: string[] = [];
+        if (url) {
+            arr?.forEach((key) => {
+                const inv = getImportUrl(
+                    url,
+                    join(process.cwd(), key),
+                );
+                rarr.push(`@use "${inv}" as *;`);
+            });
+        }
+        return rarr;
+    }
     getDefaultFileSet(
         //文件名称
         name: string,
@@ -102,6 +120,9 @@ export class FangTheme extends FangOut {
         _text: string,
         // 文件名称，没有后缀的
         wjm?: string,
+        _imp?: string,
+        // 生成的文件地址
+        surl?: string,
     ): string[] {
         const arr = regmc.exec(url);
         if (arr && arr.length > 0) {
@@ -116,15 +137,24 @@ export class FangTheme extends FangOut {
         } else {
             wjm = wjm?.replace(/\.vue$/, '');
         }
-        if (this.config.alias) {
-            wjm = this.config.alias + '-' + wjm;
-        }
-        return [
-            ...this.getFileNeader(name, url),
-            `.${wjm} {`,
+        // if (this.config.alias) {
+        //     wjm = this.config.alias + '-' + wjm;
+        // }
+        const urs = [...this.getFileNeader(name, url)];
+
+        urs.push(
+            ...this.getfileTop(
+                surl + '',
+                this.config.topUrl,
+            ),
+        );
+        urs.push(
+            `$${wjm}: '${wjm}';`,
+            `.#{$namespace + $${wjm}} {`,
             '   ',
             `}`,
-        ];
+        );
+        return urs;
     }
 }
 export function runDev(

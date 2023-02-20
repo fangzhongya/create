@@ -28,6 +28,8 @@ export type FileDatas = (
     wjm?: string,
     // 引用路径
     imp?: string,
+    // 生成的文件地址
+    surl?: string,
 ) => Array<string>;
 
 export type FileGene = (
@@ -93,6 +95,8 @@ export class FangFile extends FangCom {
         _wjm?: string,
         // 引用路径
         _imp?: string,
+        // 生成的文件地址
+        _surl?: string,
     ): string[] {
         return [];
     }
@@ -163,6 +167,7 @@ export class FangFile extends FangCom {
                             text,
                             wjmc,
                             imp,
+                            gu,
                         ),
                     );
                 }
