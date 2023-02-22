@@ -1,4 +1,5 @@
 import { styleLog } from '@fangzhongya/utils/log/styleLog';
+import { getSuffix } from '@fangzhongya/utils/urls/getSuffix';
 import { matchsEnd } from '@fangzhongya/utils/judge/matchsEnd';
 import { matchsStart } from '@fangzhongya/utils/judge/matchsStart';
 import { getUrlCatalogue } from '@fangzhongya/utils/urls/getUrlCatalogue';
@@ -40,6 +41,10 @@ export interface Config {
      * 读取当前文件，文件的编码类型，默认utf-8
      */
     read?: boolean | string;
+    /**
+     * 如果文件存在了，是否追加序号生成
+     */
+    fileTongre?: boolean;
     /**
      * 是否覆盖已经存在的文件
      */
@@ -99,6 +104,7 @@ export const defaultConfig: Config = {
      */
     extensions: ['js', 'ts'],
     suffixReg: defaultSuffixReg,
+    fileTongre: false,
     /**
      * 是否替换文件
      */
@@ -299,15 +305,30 @@ export abstract class FangCom {
         _file: FsReaddir,
         _urls: Array<string>,
     ): void;
-    getFileNotes(): Array<string> {
-        return [
-            `/**`,
-            ` * @config cover=false`,
-            ` * cover 是否覆盖当前文件，默认是false， true 表示不覆盖`,
-            ` * 当前已经由@fangzhongya/create自动生成`,
-            ` * ${new Date().toString()}`,
-            ' */',
+    getFileNotes(url: string): Array<string> {
+        const suffix = getSuffix(url);
+        const sz = [
+            `@config cover=false`,
+            `cover 是否覆盖当前文件，默认是false， true 表示不覆盖`,
+            `当前已经由@fangzhongya/create自动生成`,
+            `${new Date().toString()}`,
         ];
+        const hy = ['md', 'html', 'vue'];
+        if (hy.includes(suffix)) {
+            const arr = ['<!--'];
+            sz.forEach((v) => {
+                arr.push(' - ' + v);
+            });
+            arr.push('-->');
+            return arr;
+        } else {
+            const arr = ['/**'];
+            sz.forEach((v) => {
+                arr.push(' * ' + v);
+            });
+            arr.push(' */');
+            return arr;
+        }
     }
     /**
      * 输出文件，判断目录是否存在
@@ -372,7 +393,10 @@ export abstract class FangCom {
         type?: number,
         callback?: FsOpenCallback,
     ) {
-        let tn = this.config.fileCover ? 0 : 2;
+        let tn = this.config.fileTongre ? 3 : 2;
+        if (this.config.fileCover) {
+            tn = 0;
+        }
         if (tn == 2) {
             if (this.isForceUpdate(url)) {
                 tn = 0;
@@ -386,7 +410,9 @@ export abstract class FangCom {
             !/\.json$/.test(url)
         ) {
             str =
-                this.getFileNotes().join('\n') + '\n' + str;
+                this.getFileNotes(url).join('\n') +
+                '\n' +
+                str;
         }
         fsOpenStream(
             url,

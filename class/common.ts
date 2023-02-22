@@ -11,6 +11,7 @@ import {
     constants,
 } from 'node:fs';
 import { join } from 'node:path';
+import { getNewFileName } from '@fangzhongya/utils/urls/getNewFileName';
 
 export interface FsReaddir {
     file: Array<string>;
@@ -177,6 +178,7 @@ export function fsReaddir(
  * 0 文件不存在，或者存在都写入数据
  * 1 文件不存在 就不写入数据
  * 2 文件不存在 才写入数据
+ * 3 如果文件存在，追加
  * @param {*} callback
  */
 export function fsOpenStream(
@@ -190,7 +192,7 @@ export function fsOpenStream(
     open(path, 'wx', async (err, fd) => {
         if (err) {
             if (err.code === 'EEXIST') {
-                if (type != 2) {
+                if (type == 1 || type == 0) {
                     const fwrite = () => {
                         writeFile(
                             path,
@@ -199,21 +201,23 @@ export function fsOpenStream(
                             (err) => {
                                 if (err) {
                                     console.log('6', err);
-                                    if (callback)
+                                    if (callback) {
                                         callback(
                                             path,
                                             cover ? 3 : 2,
                                             false,
                                             type,
                                         );
+                                    }
                                 } else {
-                                    if (callback)
+                                    if (callback) {
                                         callback(
                                             path,
                                             cover ? 3 : 2,
                                             true,
                                             type,
                                         );
+                                    }
                                 }
                             },
                         );
@@ -240,29 +244,49 @@ export function fsOpenStream(
                     } else {
                         fwrite();
                     }
+                } else if (type == 3) {
+                    path = getNewFileName(path);
+                    if (path) {
+                        fsOpenStream(
+                            path,
+                            json,
+                            type,
+                            cover,
+                            callback,
+                        );
+                    } else {
+                        if (callback) {
+                            callback(path, 3, false, type);
+                        }
+                    }
                 } else {
-                    if (callback)
+                    if (callback) {
                         callback(path, 2, false, type);
+                    }
                 }
             } else {
-                if (callback)
+                if (callback) {
                     callback(path, 0, false, type);
+                }
             }
         } else {
             if (type != 1) {
                 write(fd, json, (err) => {
                     if (err) {
                         console.log('8', err);
-                        if (callback)
+                        if (callback) {
                             callback(path, 1, false, type);
+                        }
                     } else {
-                        if (callback)
+                        if (callback) {
                             callback(path, 1, true, type);
+                        }
                     }
                 });
             } else {
-                if (callback)
+                if (callback) {
                     callback(path, 1, false, type);
+                }
             }
         }
     });

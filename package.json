@@ -2,7 +2,7 @@
     "name": "@fangzhongya/create",
     "private": false,
     "type": "module",
-    "version": "0.2.3-4",
+    "version": "0.2.3-8",
     "description ": "create 创建文件",
     "author": "fangzhongya ",
     "license": "MIT",
@@ -27,11 +27,11 @@
     },
     "devDependencies": {
         "@fangzhongya/create": "link:dist",
-        "@fangzhongya/utils": "0.0.7-11",
-        "@types/node": "^18.13.0",
-        "tsup": "^6.6.0",
+        "@fangzhongya/utils": "0.0.7-18",
+        "@types/node": "^18.14.0",
+        "tsup": "^6.6.3",
         "typescript": "^4.9.5",
-        "vitest": "^0.28.4"
+        "vitest": "^0.28.5"
     },
     "exports": {
         "./*": "./*",
@@ -39,6 +39,11 @@
             "require": "./dist/bins/bil.cjs",
             "import": "./dist/bins/bil.js",
             "types": "./dist/bins/bil.d.ts"
+        },
+        "./bins/md": {
+            "require": "./dist/bins/md.cjs",
+            "import": "./dist/bins/md.js",
+            "types": "./dist/bins/md.d.ts"
         },
         "./export/package": {
             "require": "./dist/export/package.cjs",
@@ -80,15 +85,15 @@
             "import": "./dist/out/svgvue.js",
             "types": "./dist/out/svgvue.d.ts"
         },
-        "./out/theme": {
-            "require": "./dist/out/theme.cjs",
-            "import": "./dist/out/theme.js",
-            "types": "./dist/out/theme.d.ts"
-        },
         "./out/test": {
             "require": "./dist/out/test.cjs",
             "import": "./dist/out/test.js",
             "types": "./dist/out/test.d.ts"
+        },
+        "./out/theme": {
+            "require": "./dist/out/theme.cjs",
+            "import": "./dist/out/theme.js",
+            "types": "./dist/out/theme.d.ts"
         },
         "./common": {
             "require": "./dist/common.cjs",
