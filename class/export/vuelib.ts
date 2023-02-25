@@ -175,8 +175,11 @@ export class FangVueLib extends FangExport {
                 );
             }
             rarr.push(
-                `export const ${name} = withInstall(SrcVue, '${name}');`,
-                `export default ${name};`,
+                `const ${name} = withInstall(SrcVue, '${name}');`,
+                `export {`,
+                `   ${name},`,
+                `   ${name} as default`,
+                `};`,
             );
             // const isd = await fsAccess(
             //     resolve(url, './src/data.ts'),
