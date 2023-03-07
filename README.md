@@ -33,3 +33,5 @@ tsconfig.json 添加配置
     "dev": "ts-node node.index.ts",
 }
 ```
+
+测试 自动提交
